@@ -165,8 +165,9 @@ def CalcUnit(UnitName, existingUnit = None):
 		if (Template.find("./Attack/Melee/PrepareTime") != None):
 			unit['PrepRate']["Melee"] = NumericStatProcess(unit['PrepRate']["Melee"], Template.find("./Attack/Melee/PrepareTime"))
 		for atttype in AttackTypes:
-			if (Template.find("./Attack/Melee/"+atttype) != None):
-				unit['Attack']['Melee'][atttype] = NumericStatProcess(unit['Attack']['Melee'][atttype], Template.find("./Attack/Melee/"+atttype))
+			if (Template.find("./Attack/Melee/Damage/"+atttype) != None):
+				# import IPython; IPython.embed()
+				unit['Attack']['Melee'][atttype] = NumericStatProcess(unit['Attack']['Melee'][atttype], Template.find("./Attack/Melee/Damage/"+atttype))
 		if (Template.find("./Attack/Melee/Bonuses") != None):
 			for Bonus in Template.find("./Attack/Melee/Bonuses"):
 				Against = []
@@ -198,8 +199,8 @@ def CalcUnit(UnitName, existingUnit = None):
 		if (Template.find("./Attack/Ranged/PrepareTime") != None):
 			unit['PrepRate']["Ranged"] = NumericStatProcess(unit['PrepRate']["Ranged"], Template.find("./Attack/Ranged/PrepareTime"))
 		for atttype in AttackTypes:
-			if (Template.find("./Attack/Ranged/"+atttype) != None):
-				unit['Attack']['Ranged'][atttype] = NumericStatProcess(unit['Attack']['Ranged'][atttype], Template.find("./Attack/Ranged/"+atttype))
+			if (Template.find("./Attack/Ranged/Damage/"+atttype) != None):
+				unit['Attack']['Ranged'][atttype] = NumericStatProcess(unit['Attack']['Ranged'][atttype], Template.find("./Attack/Ranged/Damage/"+atttype))
 		if (Template.find("./Attack/Ranged/Bonuses") != None):
 			for Bonus in Template.find("./Attack/Ranged/Bonuses"):
 				Against = []
