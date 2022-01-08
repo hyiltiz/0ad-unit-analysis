@@ -342,6 +342,22 @@ def WriteColouredDiff(file, diff, PositOrNegat):
 	else:
 		raise Exception("Unknown diff change; did you add or delete code?").with_traceback(tracebackobj)
 
+	
+def computeTemplatesByParent(Civs:list, CivTemplates:dict, templates:dict):
+	"""Get them in the array"""
+	# Civs:list -> CivTemplates:dict -> templates:dict -> TemplatesByParent
+	TemplatesByParent = {}
+	for Civ in Civs:
+		for CivUnitTemplate in CivTemplates[Civ]:
+			parent = CivTemplates[Civ][CivUnitTemplate]["Parent"]
+			if parent in templates and templates[parent]["Civ"] == None:
+				if parent not in TemplatesByParent:
+					TemplatesByParent[parent] = []
+				TemplatesByParent[parent].append( (CivUnitTemplate,CivTemplates[Civ][CivUnitTemplate]))
+
+	import IPython; IPython.embed()
+	return TemplatesByParent
+
 
 ############################################################
 ############################################################
@@ -419,16 +435,7 @@ for Civ in Civs:
 f.write("\n\n<h2>Units Specializations</h2>\n")
 f.write("<p class=\"desc\">This table compares each template to its parent, showing the differences between the two.<br/>Note that like any table, you can copy/paste this in Excel (or Numbers or ...) and sort it.</p>")
 
-TemplatesByParent = {}
-
-#Get them in the array
-for Civ in Civs:
-	for CivUnitTemplate in CivTemplates[Civ]:
-		parent = CivTemplates[Civ][CivUnitTemplate]["Parent"]
-		if parent in templates and templates[parent]["Civ"] == None:
-			if parent not in TemplatesByParent:
-				TemplatesByParent[parent] = []
-			TemplatesByParent[parent].append( (CivUnitTemplate,CivTemplates[Civ][CivUnitTemplate]))
+TemplatesByParent = computeTemplatesByParent(Civs, CivTemplates, templates)
 
 #Sort them by civ and write them in a table.
 f.write("<table id=\"TemplateParentComp\">\n")
