@@ -343,7 +343,7 @@ def WriteColouredDiff(file, diff, PositOrNegat):
 		raise Exception("Unknown diff change; did you add or delete code?").with_traceback(tracebackobj)
 
 	
-def computeTemplatesByParent(Civs:list, CivTemplates:dict, templates:dict):
+def computeTemplatesByParent(templates:dict, Civs:list, CivTemplates:dict):
 	"""Get them in the array"""
 	# Civs:list -> CivTemplates:dict -> templates:dict -> TemplatesByParent
 	TemplatesByParent = {}
@@ -357,6 +357,42 @@ def computeTemplatesByParent(Civs:list, CivTemplates:dict, templates:dict):
 
 	import IPython; IPython.embed()
 	return TemplatesByParent
+
+
+def computeCivTemplates(template: dict, Civs: list)
+	"""Load Civ specific templates"""
+	CivTemplates = {}
+
+	for Civ in Civs:
+		CivTemplates[Civ] = {}
+		# Load all templates that start with that civ indicator
+		for template in list(glob.glob('units/' + Civ + '_*.xml')):
+			if os.path.isfile(template):
+
+				# filter based on FilterOut
+				breakIt = False
+				for filter in FilterOut:
+					if template.find(filter) != -1: breakIt = True
+				if breakIt: continue
+
+				# filter based on loaded generic templates
+				breakIt = True
+				for possParent in LoadTemplatesIfParent:
+					if hasParentTemplate(template, possParent):
+						breakIt = False
+						break
+				if breakIt: continue
+
+				unit = CalcUnit(template)
+
+				# Remove variants for now
+				if unit["Parent"].find("template_") == -1:
+					continue
+
+				# load template
+				CivTemplates[Civ][template] = unit
+
+	return CivTemplates
 
 
 ############################################################
@@ -397,45 +433,14 @@ for template in list(glob.glob('template_*.xml')):
 
 f.write("</table>")
 
-############################################################
-# Load Civ specific templates
 
-CivTemplates = {}
-
-for Civ in Civs:
-	CivTemplates[Civ] = {}
-	# Load all templates that start with that civ indicator
-	for template in list(glob.glob('units/' + Civ + '_*.xml')):
-		if os.path.isfile(template):
-
-			# filter based on FilterOut
-			breakIt = False
-			for filter in FilterOut:
-				if template.find(filter) != -1: breakIt = True
-			if breakIt: continue
-
-			# filter based on loaded generic templates
-			breakIt = True
-			for possParent in LoadTemplatesIfParent:
-				if hasParentTemplate(template, possParent):
-					breakIt = False
-					break
-			if breakIt: continue
-
-			unit = CalcUnit(template)
-
-			# Remove variants for now
-			if unit["Parent"].find("template_") == -1:
-				continue
-
-			# load template
-			CivTemplates[Civ][template] = unit
+CivTemplates = computeCivTemplates(template, Civs)
 
 ############################################################
 f.write("\n\n<h2>Units Specializations</h2>\n")
 f.write("<p class=\"desc\">This table compares each template to its parent, showing the differences between the two.<br/>Note that like any table, you can copy/paste this in Excel (or Numbers or ...) and sort it.</p>")
 
-TemplatesByParent = computeTemplatesByParent(Civs, CivTemplates, templates)
+TemplatesByParent = computeTemplatesByParent(templates, Civs, CivTemplates)
 
 #Sort them by civ and write them in a table.
 f.write("<table id=\"TemplateParentComp\">\n")
