@@ -554,83 +554,65 @@ f.write("<table/>")
 
 # Add a simple script to allow filtering on sorting directly in the HTML page.
 if AddSortingOverlay:
-	f.write("<script src=\"tablefilter/tablefilter.js\"></script>\n\
-	\n\
-	<script data-config>\n\
-	\
-		var cast = function (val) {\n\
-		console.log(val);\
-			if (+val != val)\n\
-				return -999999999999;\n\
-			return +val;\n\
-		}\n\
-	\n\n\
-		var filtersConfig = {\n\
-			base_path: 'tablefilter/',\n\
-			col_0: 'checklist',\n\
-			alternate_rows: true,\n\
-			rows_counter: true,\n\
-			btn_reset: true,\n\
-			loader: false,\n\
-			status_bar: false,\n\
-			mark_active_columns: true,\n\
-			highlight_keywords: true,\n\
-			col_number_format: [\n\
-				'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US'\n\
-			],\n\
-			filters_row_index: 2,\n\
-			headers_row_index: 1,\n\
-			extensions:[{\
-				name: 'sort',\
-				types: [\
-					'string', 'us', 'us', 'us', 'us', 'us', 'us', 'mytype', 'mytype', 'mytype', 'mytype', 'mytype', 'mytype', 'us', 'us', 'us', 'us', 'us', 'string'\
-				],\
-				on_sort_loaded: function(o, sort) {\
-					sort.addSortType('mytype',cast);\
-				},\
-			}],\n\
-			col_widths: [\n\
-				null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,'120px'\n\
-			],\n\
-		};\n\
-		var tf = new TableFilter('genericTemplates', filtersConfig,2);\n\
-		tf.init();\n\
-	\n\
-	   \
-		var secondFiltersConfig = {\n\
-			base_path: 'tablefilter/',\n\
-			col_0: 'checklist',\n\
-			col_19: 'checklist',\n\
-			alternate_rows: true,\n\
-			rows_counter: true,\n\
-			btn_reset: true,\n\
-			loader: false,\n\
-			status_bar: false,\n\
-			mark_active_columns: true,\n\
-			highlight_keywords: true,\n\
-			col_number_format: [\n\
-				null, null, 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', null\n\
-			],\n\
-			filters_row_index: 2,\n\
-			headers_row_index: 1,\n\
-			extensions:[{\
-				name: 'sort',\
-				types: [\
-					'string', 'string', 'us', 'us', 'us', 'us', 'us', 'us', 'typetwo', 'typetwo', 'typetwo', 'typetwo', 'typetwo', 'typetwo', 'us', 'us', 'us', 'us', 'us', 'string'\
-				],\
-				on_sort_loaded: function(o, sort) {\
-					sort.addSortType('typetwo',cast);\
-				},\
-			}],\n\
-			col_widths: [\n\
-				null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null\n\
-			],\n\
-		};\n\
-		\
-		var tf2 = new TableFilter('TemplateParentComp', secondFiltersConfig,2);\n\
-		tf2.init();\n\
-	\n\
-	</script>\n")
+	f.write("""
+<script src="tablefilter/tablefilter.js"></script>
+<script data-config>
+var cast = function (val) {
+console.log(val);                       if (+val != val)
+		return -999999999999;
+	return +val;
+}
+
+
+var filtersConfig = {
+	base_path: 'tablefilter/',
+	col_0: 'checklist',
+	alternate_rows: true,
+	rows_counter: true,
+	btn_reset: true,
+	loader: false,
+	status_bar: false,
+	mark_active_columns: true,
+	highlight_keywords: true,
+	col_number_format: [
+		'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US'
+	],
+	filters_row_index: 2,
+	headers_row_index: 1,
+	extensions:[{                           name: 'sort',                           types: [       'string', 'us', 'us', 'us', 'us', 'us', 'us', 'mytype', 'mytype', 'mytype', 'mytype', 'mytype', 'mytype', 'us', 'us', 'us', 'us', 'us', 'string'                         ],                              on_sort_loaded: function(o, sort) {    sort.addSortType('mytype',cast);                         },                      }],
+	col_widths: [
+		null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,'120px'
+	],
+};
+var tf = new TableFilter('genericTemplates', filtersConfig,2);
+tf.init();
+
+	var secondFiltersConfig = {
+	base_path: 'tablefilter/',
+	col_0: 'checklist',
+	col_19: 'checklist',
+	alternate_rows: true,
+	rows_counter: true,
+	btn_reset: true,
+	loader: false,
+	status_bar: false,
+	mark_active_columns: true,
+	highlight_keywords: true,
+	col_number_format: [
+		null, null, 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', null
+	],
+	filters_row_index: 2,
+	headers_row_index: 1,
+	extensions:[{                           name: 'sort',                           types: [       'string', 'string', 'us', 'us', 'us', 'us', 'us', 'us', 'typetwo', 'typetwo', 'typetwo', 'typetwo', 'typetwo', 'typetwo', 'us', 'us', 'us', 'us', 'us', 'string'                         ],                              on_sort_loaded: function(o, sort) {                                     sort.addSortType('typetwo',cast);                               },     }],
+	col_widths: [
+		null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null
+	],
+};
+		var tf2 = new TableFilter('TemplateParentComp', secondFiltersConfig,2);
+tf2.init();
+
+</script>
+""")
 
 
 f.write("</body>\n</html>")
