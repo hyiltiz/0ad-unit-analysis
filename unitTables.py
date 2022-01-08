@@ -424,195 +424,203 @@ TemplatesByParent = computeTemplatesByParent(templates, Civs, CivTemplates)
 ############################################################
 # Create the HTML file
 
-f = open(os.path.realpath(__file__).replace("unitTables.py","") + 'unit_summary_table.html', 'w')
+def writeHTML():
+	f = open(os.path.realpath(__file__).replace("unitTables.py","") + 'unit_summary_table.html', 'w')
 
-f.write("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\">\n<html>\n<head>\n	<title>Unit Tables</title>\n	<link rel=\"stylesheet\" href=\"style.css\">\n</head>\n<body>")
-htbout(f,"h1","Unit Summary Table")
-f.write("\n")
-
-
-############################################################
-# Load generic templates
+	f.write("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\">\n<html>\n<head>\n	<title>Unit Tables</title>\n	<link rel=\"stylesheet\" href=\"style.css\">\n</head>\n<body>")
+	htbout(f,"h1","Unit Summary Table")
+	f.write("\n")
 
 
-htbout(f,"h2", "Units")
-
-f.write("<table id=\"genericTemplates\">\n")
-f.write("<thead><tr>")
-f.write("<th></th><th>HP</th>	<th>BuildTime</th>	<th>Speed(walk)</th>	<th colspan=\"3\">Resistance</th>	<th colspan=\"6\">Attack (DPS)</th>													<th colspan=\"5\">Costs</th>						<th>Efficient Against</th> 	</tr>\n")
-f.write("<tr class=\"Label\" style=\"border-bottom:1px black solid;\">")
-f.write("<th></th><th></th>		<th></th>			<th></th>				<th>H</th><th>P</th><th>C</th>	<th>H</th><th>P</th><th>C</th><th>Rate</th><th>Range</th><th>Spread\n(/100m)</th>	<th>F</th><th>W</th><th>S</th><th>M</th><th>P</th>	<th></th>		</tr>\n</thead>\n")
-for template in templates:
-	f.write(WriteUnit(template, templates[template]))
-
-f.write("</table>")
+	############################################################
+	# Load generic templates
 
 
+	htbout(f,"h2", "Units")
 
-############################################################
-f.write("\n\n<h2>Units Specializations</h2>\n")
-f.write("<p class=\"desc\">This table compares each template to its parent, showing the differences between the two.<br/>Note that like any table, you can copy/paste this in Excel (or Numbers or ...) and sort it.</p>")
+	f.write("<table id=\"genericTemplates\">\n")
+	f.write("<thead><tr>")
+	f.write("<th></th><th>HP</th>	<th>BuildTime</th>	<th>Speed(walk)</th>	<th colspan=\"3\">Resistance</th>	<th colspan=\"6\">Attack (DPS)</th>													<th colspan=\"5\">Costs</th>						<th>Efficient Against</th> 	</tr>\n")
+	f.write("<tr class=\"Label\" style=\"border-bottom:1px black solid;\">")
+	f.write("<th></th><th></th>		<th></th>			<th></th>				<th>H</th><th>P</th><th>C</th>	<th>H</th><th>P</th><th>C</th><th>Rate</th><th>Range</th><th>Spread\n(/100m)</th>	<th>F</th><th>W</th><th>S</th><th>M</th><th>P</th>	<th></th>		</tr>\n</thead>\n")
+	for template in templates:
+		f.write(WriteUnit(template, templates[template]))
+
+	f.write("</table>")
 
 
-#Sort them by civ and write them in a table.
-f.write("<table id=\"TemplateParentComp\">\n")
-f.write("<thead><tr>")
-f.write("<th></th><th></th><th>HP</th>	<th>BuildTime</th>	<th>Speed</th>	<th colspan=\"3\">Resistance</th>	<th colspan=\"6\">Attack</th>												<th colspan=\"5\">Costs</th>						<th>Civ</th>	</tr>\n")
-f.write("<tr class=\"Label\" style=\"border-bottom:1px black solid;\">")
-f.write("<th></th><th></th><th></th>	<th></th>			<th></th>		<th>H</th><th>P</th><th>C</th>	<th>H</th><th>P</th><th>C</th><th>Rate</th><th>Range</th><th>Spread</th>	<th>F</th><th>W</th><th>S</th><th>M</th><th>P</th>	<th></th>		</tr>\n<tr></thead>")
-for parent in TemplatesByParent:
-	TemplatesByParent[parent].sort(key=lambda x : Civs.index(x[1]["Civ"]))
-	for tp in TemplatesByParent[parent]:
-		f.write("<th style='font-size:10px'>" + parent.replace(".xml","").replace("template_","") + "</th>")
 
-		f.write("<td class=\"Sub\">" + tp[0].replace(".xml","").replace("units/","") + "</td>")
-		
-		# HP
-		diff = int(tp[1]["HP"]) - int(templates[parent]["HP"])
-		WriteColouredDiff(f, diff, "negative")
-		
-		# Build Time
-		diff = int(tp[1]["BuildTime"]) - int(templates[parent]["BuildTime"])
-		WriteColouredDiff(f, diff, "positive")
-		
-		# walk speed
-		diff = float(tp[1]["WalkSpeed"]) - float(templates[parent]["WalkSpeed"])
-		WriteColouredDiff(f, diff, "negative")
-		
-		# Armor
-		for atype in AttackTypes:
-			diff = float(tp[1]["Resistance"][atype]) - float(templates[parent]["Resistance"][atype])
+	############################################################
+	f.write("\n\n<h2>Units Specializations</h2>\n")
+	f.write("<p class=\"desc\">This table compares each template to its parent, showing the differences between the two.<br/>Note that like any table, you can copy/paste this in Excel (or Numbers or ...) and sort it.</p>")
+
+
+	#Sort them by civ and write them in a table.
+	f.write("<table id=\"TemplateParentComp\">\n")
+	f.write("<thead><tr>")
+	f.write("<th></th><th></th><th>HP</th>	<th>BuildTime</th>	<th>Speed</th>	<th colspan=\"3\">Resistance</th>	<th colspan=\"6\">Attack</th>												<th colspan=\"5\">Costs</th>						<th>Civ</th>	</tr>\n")
+	f.write("<tr class=\"Label\" style=\"border-bottom:1px black solid;\">")
+	f.write("<th></th><th></th><th></th>	<th></th>			<th></th>		<th>H</th><th>P</th><th>C</th>	<th>H</th><th>P</th><th>C</th><th>Rate</th><th>Range</th><th>Spread</th>	<th>F</th><th>W</th><th>S</th><th>M</th><th>P</th>	<th></th>		</tr>\n<tr></thead>")
+	for parent in TemplatesByParent:
+		TemplatesByParent[parent].sort(key=lambda x : Civs.index(x[1]["Civ"]))
+		for tp in TemplatesByParent[parent]:
+			f.write("<th style='font-size:10px'>" + parent.replace(".xml","").replace("template_","") + "</th>")
+
+			f.write("<td class=\"Sub\">" + tp[0].replace(".xml","").replace("units/","") + "</td>")
+
+			# HP
+			diff = int(tp[1]["HP"]) - int(templates[parent]["HP"])
 			WriteColouredDiff(f, diff, "negative")
 
-		# Attack types (DPS) and rate.
-		attType = ("Ranged" if tp[1]["Ranged"] == True else "Melee")
-		if tp[1]["RepeatRate"][attType] != "0":
+			# Build Time
+			diff = int(tp[1]["BuildTime"]) - int(templates[parent]["BuildTime"])
+			WriteColouredDiff(f, diff, "positive")
+
+			# walk speed
+			diff = float(tp[1]["WalkSpeed"]) - float(templates[parent]["WalkSpeed"])
+			WriteColouredDiff(f, diff, "negative")
+
+			# Armor
 			for atype in AttackTypes:
-				myDPS = float(tp[1]["Attack"][attType][atype]) / (float(tp[1]["RepeatRate"][attType])/1000.0)
-				parentDPS = float(templates[parent]["Attack"][attType][atype]) / (float(templates[parent]["RepeatRate"][attType])/1000.0)
-				WriteColouredDiff(f, myDPS - parentDPS, "negative")
-			WriteColouredDiff(f, float(tp[1]["RepeatRate"][attType])/1000.0 - float(templates[parent]["RepeatRate"][attType])/1000.0, "negative")
-			# range and spread
-			if tp[1]["Ranged"] == True:
-				WriteColouredDiff(f, float(tp[1]["Range"]) - float(templates[parent]["Range"]), "negative")
-				mySpread = float(tp[1]["Spread"])
-				parentSpread = float(templates[parent]["Spread"])
-				WriteColouredDiff(f,  mySpread - parentSpread, "positive")
+				diff = float(tp[1]["Resistance"][atype]) - float(templates[parent]["Resistance"][atype])
+				WriteColouredDiff(f, diff, "negative")
+
+			# Attack types (DPS) and rate.
+			attType = ("Ranged" if tp[1]["Ranged"] == True else "Melee")
+			if tp[1]["RepeatRate"][attType] != "0":
+				for atype in AttackTypes:
+					myDPS = float(tp[1]["Attack"][attType][atype]) / (float(tp[1]["RepeatRate"][attType])/1000.0)
+					parentDPS = float(templates[parent]["Attack"][attType][atype]) / (float(templates[parent]["RepeatRate"][attType])/1000.0)
+					WriteColouredDiff(f, myDPS - parentDPS, "negative")
+				WriteColouredDiff(f, float(tp[1]["RepeatRate"][attType])/1000.0 - float(templates[parent]["RepeatRate"][attType])/1000.0, "negative")
+				# range and spread
+				if tp[1]["Ranged"] == True:
+					WriteColouredDiff(f, float(tp[1]["Range"]) - float(templates[parent]["Range"]), "negative")
+					mySpread = float(tp[1]["Spread"])
+					parentSpread = float(templates[parent]["Spread"])
+					WriteColouredDiff(f,  mySpread - parentSpread, "positive")
+				else:
+					f.write("<td></td><td></td>")
 			else:
-				f.write("<td></td><td></td>")
-		else:
-				f.write("<td></td><td></td><td></td><td></td><td></td><td></td>")
+					f.write("<td></td><td></td><td></td><td></td><td></td><td></td>")
 
-		for rtype in Resources:
-			WriteColouredDiff(f, float(tp[1]["Cost"][rtype]) - float(templates[parent]["Cost"][rtype]), "positive")
-		
-		WriteColouredDiff(f, float(tp[1]["Cost"]["population"]) - float(templates[parent]["Cost"]["population"]), "positive")
+			for rtype in Resources:
+				WriteColouredDiff(f, float(tp[1]["Cost"][rtype]) - float(templates[parent]["Cost"][rtype]), "positive")
 
-		f.write("<td>" + tp[1]["Civ"] + "</td>")
+			WriteColouredDiff(f, float(tp[1]["Cost"]["population"]) - float(templates[parent]["Cost"]["population"]), "positive")
 
-		f.write("</tr>\n<tr>")
-f.write("<table/>")
+			f.write("<td>" + tp[1]["Civ"] + "</td>")
 
-# Table of unit having or not having some units.
-f.write("\n\n<h2>Roster Variety</h2>\n")
-f.write("<p class=\"desc\">This table show which civilizations have units who derive from each loaded generic template.<br/>Green means 1 deriving unit, blue means 2, black means 3 or more.<br/>The total is the total number of loaded units for this civ, which may be more than the total of units inheriting from loaded templates.</p>")
-f.write("<table class=\"CivRosterVariety\">\n")
-f.write("<tr><th>Template</th>\n")
-for civ in Civs:
-	f.write("<td class=\"vertical-text\">" + civ + "</td>\n")
-f.write("</tr>\n")
+			f.write("</tr>\n<tr>")
+	f.write("<table/>")
 
-sortedDict = sorted(templates.items(), key=SortFn)
-
-for tp in sortedDict:
-	if tp[0] not in TemplatesByParent:
-		continue
-	f.write("<tr><td>" + tp[0] +"</td>\n")
+	# Table of unit having or not having some units.
+	f.write("\n\n<h2>Roster Variety</h2>\n")
+	f.write("<p class=\"desc\">This table show which civilizations have units who derive from each loaded generic template.<br/>Green means 1 deriving unit, blue means 2, black means 3 or more.<br/>The total is the total number of loaded units for this civ, which may be more than the total of units inheriting from loaded templates.</p>")
+	f.write("<table class=\"CivRosterVariety\">\n")
+	f.write("<tr><th>Template</th>\n")
 	for civ in Civs:
-		found = 0
-		for temp in TemplatesByParent[tp[0]]:
-			if temp[1]["Civ"] == civ:
-				found += 1
-		if found == 1:
-			f.write("<td style=\"background-color:rgb(0,230,0);\"></td>")
-		elif found == 2:
-			f.write("<td style=\"background-color:rgb(0,0,200);\"></td>")
-		elif found >= 3:
-			f.write("<td style=\"background-color:rgb(0,0,0);\"></td>")
-		else:
-			f.write("<td style=\"background-color:rgb(235,0,0);\"></td>")
+		f.write("<td class=\"vertical-text\">" + civ + "</td>\n")
 	f.write("</tr>\n")
-f.write("<tr style=\"margin-top:2px;border-top:2px #aaa solid;\"><th style=\"text-align:right; padding-right:10px;\">Total:</th>\n")
-for civ in Civs:
-	count = 0
-	for units in CivTemplates[civ]: count += 1
-	f.write("<td style=\"text-align:center;\">" + str(count) + "</td>\n")
 
-f.write("</tr>\n")
+	sortedDict = sorted(templates.items(), key=SortFn)
 
-f.write("<table/>")
+	for tp in sortedDict:
+		if tp[0] not in TemplatesByParent:
+			continue
+		f.write("<tr><td>" + tp[0] +"</td>\n")
+		for civ in Civs:
+			found = 0
+			for temp in TemplatesByParent[tp[0]]:
+				if temp[1]["Civ"] == civ:
+					found += 1
+			if found == 1:
+				f.write("<td style=\"background-color:rgb(0,230,0);\"></td>")
+			elif found == 2:
+				f.write("<td style=\"background-color:rgb(0,0,200);\"></td>")
+			elif found >= 3:
+				f.write("<td style=\"background-color:rgb(0,0,0);\"></td>")
+			else:
+				f.write("<td style=\"background-color:rgb(235,0,0);\"></td>")
+		f.write("</tr>\n")
+	f.write("<tr style=\"margin-top:2px;border-top:2px #aaa solid;\"><th style=\"text-align:right; padding-right:10px;\">Total:</th>\n")
+	for civ in Civs:
+		count = 0
+		for units in CivTemplates[civ]: count += 1
+		f.write("<td style=\"text-align:center;\">" + str(count) + "</td>\n")
 
-# Add a simple script to allow filtering on sorting directly in the HTML page.
-if AddSortingOverlay:
-	f.write("""
-<script src="tablefilter/tablefilter.js"></script>
-<script data-config>
-var cast = function (val) {
-console.log(val);                       if (+val != val)
-		return -999999999999;
-	return +val;
-}
+	f.write("</tr>\n")
 
+	f.write("<table/>")
 
-var filtersConfig = {
-	base_path: 'tablefilter/',
-	col_0: 'checklist',
-	alternate_rows: true,
-	rows_counter: true,
-	btn_reset: true,
-	loader: false,
-	status_bar: false,
-	mark_active_columns: true,
-	highlight_keywords: true,
-	col_number_format: [
-		'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US'
-	],
-	filters_row_index: 2,
-	headers_row_index: 1,
-	extensions:[{                           name: 'sort',                           types: [       'string', 'us', 'us', 'us', 'us', 'us', 'us', 'mytype', 'mytype', 'mytype', 'mytype', 'mytype', 'mytype', 'us', 'us', 'us', 'us', 'us', 'string'                         ],                              on_sort_loaded: function(o, sort) {    sort.addSortType('mytype',cast);                         },                      }],
-	col_widths: [
-		null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,'120px'
-	],
-};
-var tf = new TableFilter('genericTemplates', filtersConfig,2);
-tf.init();
-
-	var secondFiltersConfig = {
-	base_path: 'tablefilter/',
-	col_0: 'checklist',
-	col_19: 'checklist',
-	alternate_rows: true,
-	rows_counter: true,
-	btn_reset: true,
-	loader: false,
-	status_bar: false,
-	mark_active_columns: true,
-	highlight_keywords: true,
-	col_number_format: [
-		null, null, 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', null
-	],
-	filters_row_index: 2,
-	headers_row_index: 1,
-	extensions:[{                           name: 'sort',                           types: [       'string', 'string', 'us', 'us', 'us', 'us', 'us', 'us', 'typetwo', 'typetwo', 'typetwo', 'typetwo', 'typetwo', 'typetwo', 'us', 'us', 'us', 'us', 'us', 'string'                         ],                              on_sort_loaded: function(o, sort) {                                     sort.addSortType('typetwo',cast);                               },     }],
-	col_widths: [
-		null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null
-	],
-};
-		var tf2 = new TableFilter('TemplateParentComp', secondFiltersConfig,2);
-tf2.init();
-
-</script>
-""")
+	# Add a simple script to allow filtering on sorting directly in the HTML page.
+	if AddSortingOverlay:
+		f.write("""
+	<script src="tablefilter/tablefilter.js"></script>
+	<script data-config>
+	var cast = function (val) {
+	console.log(val);                       if (+val != val)
+			return -999999999999;
+		return +val;
+	}
 
 
-f.write("</body>\n</html>")
+	var filtersConfig = {
+		base_path: 'tablefilter/',
+		col_0: 'checklist',
+		alternate_rows: true,
+		rows_counter: true,
+		btn_reset: true,
+		loader: false,
+		status_bar: false,
+		mark_active_columns: true,
+		highlight_keywords: true,
+		col_number_format: [
+			'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US'
+		],
+		filters_row_index: 2,
+		headers_row_index: 1,
+		extensions:[{                           name: 'sort',                           types: [       'string', 'us', 'us', 'us', 'us', 'us', 'us', 'mytype', 'mytype', 'mytype', 'mytype', 'mytype', 'mytype', 'us', 'us', 'us', 'us', 'us', 'string'                         ],                              on_sort_loaded: function(o, sort) {    sort.addSortType('mytype',cast);                         },                      }],
+		col_widths: [
+			null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,'120px'
+		],
+	};
+	var tf = new TableFilter('genericTemplates', filtersConfig,2);
+	tf.init();
+
+		var secondFiltersConfig = {
+		base_path: 'tablefilter/',
+		col_0: 'checklist',
+		col_19: 'checklist',
+		alternate_rows: true,
+		rows_counter: true,
+		btn_reset: true,
+		loader: false,
+		status_bar: false,
+		mark_active_columns: true,
+		highlight_keywords: true,
+		col_number_format: [
+			null, null, 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', null
+		],
+		filters_row_index: 2,
+		headers_row_index: 1,
+		extensions:[{                           name: 'sort',                           types: [       'string', 'string', 'us', 'us', 'us', 'us', 'us', 'us', 'typetwo', 'typetwo', 'typetwo', 'typetwo', 'typetwo', 'typetwo', 'us', 'us', 'us', 'us', 'us', 'string'                         ],                              on_sort_loaded: function(o, sort) {                                     sort.addSortType('typetwo',cast);                               },     }],
+		col_widths: [
+			null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null
+		],
+	};
+			var tf2 = new TableFilter('TemplateParentComp', secondFiltersConfig,2);
+	tf2.init();
+
+	</script>
+	""")
+
+
+	f.write("</body>\n</html>")
+
+
+if __name__ == '__main__':
+	# args = docopt(__doc__, version='proper prototype 0.4')
+	# if args['build']:
+	#     build()
+	writeHTML()
