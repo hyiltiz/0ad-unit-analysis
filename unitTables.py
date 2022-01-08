@@ -115,7 +115,7 @@ def CalcUnit(UnitName, existingUnit = None):
 	"""This function parses the entity values recursively through fastParse()."""
 	unit = { 'HP' : "0", "BuildTime" : "0", "Cost" : { 'food' : "0", "wood" : "0", "stone" : "0", "metal" : "0", "population" : "0"},
 	'Attack' : { "Melee" : { "Hack" : 0, "Pierce" : 0, "Crush" : 0 }, "Ranged" : { "Hack" : 0, "Pierce" : 0, "Crush" : 0 } },
-	'RepeatRate' : {"Melee" : "0", "Ranged" : "0"},'PrepRate' : {"Melee" : "0", "Ranged" : "0"}, "Armour" : { "Hack" : 0, "Pierce" : 0, "Crush" : 0},
+	'RepeatRate' : {"Melee" : "0", "Ranged" : "0"},'PrepRate' : {"Melee" : "0", "Ranged" : "0"}, "Resistance" : { "Hack" : 0, "Pierce" : 0, "Crush" : 0},
 	"Ranged" : False, "Classes" : [], "AttackBonuses" : {}, "Restricted" : [], "WalkSpeed" : 0, "Range" : 0, "Spread" : 0,
 	"Civ" : None }
 	
@@ -210,10 +210,11 @@ def CalcUnit(UnitName, existingUnit = None):
 						unit["Restricted"].pop(newClasses.index(elem))
 			unit["Restricted"] += newClasses
 
-	if (Template.find("./Armour") != None):
+
+	if (Template.find("Resistance") != None):
 		for atttype in AttackTypes:
-			if (Template.find("./Armour/"+atttype) != None):
-				unit['Armour'][atttype] = NumericStatProcess(unit['Armour'][atttype], Template.find("./Armour/"+atttype))
+			if (Template.find("./Resistance/"+atttype) != None):
+				unit['Resistance'][atttype] = NumericStatProcess(unit['Resistance'][atttype], Template.find("./Resistance/"+atttype))
 
 	if (Template.find("./UnitMotion") != None):
 		if (Template.find("./UnitMotion/WalkSpeed") != None):
@@ -252,8 +253,8 @@ def WriteUnit(Name, UnitDict):
 	ret += "<td>" + str("%.1f" % float(UnitDict["WalkSpeed"])) + "</td>"
 
 	for atype in AttackTypes:
-		PercentValue = 1.0 - (0.9 ** float(UnitDict["Armour"][atype]))
-		ret += "<td>" + str("%.0f" % float(UnitDict["Armour"][atype])) + " / " + str("%.0f" % (PercentValue*100.0)) + "%</td>"
+		PercentValue = 1.0 - (0.9 ** float(UnitDict["Resistance"][atype]))
+		ret += "<td>" + str("%.0f" % float(UnitDict["Resistance"][atype])) + " / " + str("%.0f" % (PercentValue*100.0)) + "%</td>"
 
 	attType = ("Ranged" if UnitDict["Ranged"] == True else "Melee")
 	if UnitDict["RepeatRate"][attType] != "0":
@@ -343,7 +344,7 @@ htbout(f,"h2", "Units")
 
 f.write("<table id=\"genericTemplates\">\n")
 f.write("<thead><tr>")
-f.write("<th></th><th>HP</th>	<th>BuildTime</th>	<th>Speed(walk)</th>	<th colspan=\"3\">Armour</th>	<th colspan=\"6\">Attack (DPS)</th>													<th colspan=\"5\">Costs</th>						<th>Efficient Against</th> 	</tr>\n")
+f.write("<th></th><th>HP</th>	<th>BuildTime</th>	<th>Speed(walk)</th>	<th colspan=\"3\">Resistance</th>	<th colspan=\"6\">Attack (DPS)</th>													<th colspan=\"5\">Costs</th>						<th>Efficient Against</th> 	</tr>\n")
 f.write("<tr class=\"Label\" style=\"border-bottom:1px black solid;\">")
 f.write("<th></th><th></th>		<th></th>			<th></th>				<th>H</th><th>P</th><th>C</th>	<th>H</th><th>P</th><th>C</th><th>Rate</th><th>Range</th><th>Spread\n(/100m)</th>	<th>F</th><th>W</th><th>S</th><th>M</th><th>P</th>	<th></th>		</tr>\n</thead>\n")
 
@@ -412,7 +413,7 @@ for Civ in Civs:
 #Sort them by civ and write them in a table.
 f.write("<table id=\"TemplateParentComp\">\n")
 f.write("<thead><tr>")
-f.write("<th></th><th></th><th>HP</th>	<th>BuildTime</th>	<th>Speed</th>	<th colspan=\"3\">Armour</th>	<th colspan=\"6\">Attack</th>												<th colspan=\"5\">Costs</th>						<th>Civ</th>	</tr>\n")
+f.write("<th></th><th></th><th>HP</th>	<th>BuildTime</th>	<th>Speed</th>	<th colspan=\"3\">Resistance</th>	<th colspan=\"6\">Attack</th>												<th colspan=\"5\">Costs</th>						<th>Civ</th>	</tr>\n")
 f.write("<tr class=\"Label\" style=\"border-bottom:1px black solid;\">")
 f.write("<th></th><th></th><th></th>	<th></th>			<th></th>		<th>H</th><th>P</th><th>C</th>	<th>H</th><th>P</th><th>C</th><th>Rate</th><th>Range</th><th>Spread</th>	<th>F</th><th>W</th><th>S</th><th>M</th><th>P</th>	<th></th>		</tr>\n<tr></thead>")
 for parent in TemplatesByParent:
@@ -436,7 +437,7 @@ for parent in TemplatesByParent:
 		
 		# Armor
 		for atype in AttackTypes:
-			diff = float(tp[1]["Armour"][atype]) - float(templates[parent]["Armour"][atype])
+			diff = float(tp[1]["Resistance"][atype]) - float(templates[parent]["Resistance"][atype])
 			WriteColouredDiff(f, diff, "negative")
 
 		# Attack types (DPS) and rate.
