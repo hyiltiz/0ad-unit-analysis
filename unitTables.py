@@ -412,7 +412,6 @@ def computeTemplatesByParent(templates:dict, Civs:list, CivTemplates:dict):
 				TemplatesByParent[parent].append( (CivUnitTemplate,CivTemplates[Civ][CivUnitTemplate]))
 
 	# debug after CivTemplates are non-empty
-	import IPython; IPython.embed()
 	return TemplatesByParent
 
 
@@ -423,46 +422,84 @@ templates = computeTemplates(LoadTemplatesIfParent)
 CivTemplates = computeCivTemplates(templates, Civs)
 TemplatesByParent = computeTemplatesByParent(templates, Civs, CivTemplates)
 
-############################################################
-# Create the HTML file
 
+
+############################################################
 def writeHTML():
+	"""Create the HTML file"""
 	f = open(os.path.realpath(__file__).replace("unitTables.py","") + 'unit_summary_table.html', 'w')
 
-	f.write("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\">\n<html>\n<head>\n	<title>Unit Tables</title>\n	<link rel=\"stylesheet\" href=\"style.css\">\n</head>\n<body>")
+	f.write('''
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+<head>
+        <title>Unit Tables</title>
+        <link rel="stylesheet" href="style.css">
+</head>
+<body>
+	''')
 	htbout(f,"h1","Unit Summary Table")
 	f.write("\n")
 
 
-	############################################################
-	# Load generic templates
-
-
+	# Write generic templates
 	htbout(f,"h2", "Units")
-
-	f.write("<table id=\"genericTemplates\">\n")
-	f.write("<thead><tr>")
-	f.write("<th></th><th>HP</th>	<th>BuildTime</th>	<th>Speed(walk)</th>	<th colspan=\"3\">Resistance</th>	<th colspan=\"6\">Attack (DPS)</th>													<th colspan=\"5\">Costs</th>						<th>Efficient Against</th> 	</tr>\n")
-	f.write("<tr class=\"Label\" style=\"border-bottom:1px black solid;\">")
-	f.write("<th></th><th></th>		<th></th>			<th></th>				<th>H</th><th>P</th><th>C</th>	<th>H</th><th>P</th><th>C</th><th>Rate</th><th>Range</th><th>Spread\n(/100m)</th>	<th>F</th><th>W</th><th>S</th><th>M</th><th>P</th>	<th></th>		</tr>\n</thead>\n")
+	f.write("""
+<table id="genericTemplates">
+  <thead>
+    <tr>
+      <th> </th> <th>HP </th> <th>BuildTime </th> <th>Speed(walk) </th>
+	  <th colspan="3">Resistance </th>
+	  <th colspan="6">Attack (DPS) </th>
+	  <th colspan="5">Costs </th>
+	  <th>Efficient Against </th>
+ 	</tr>
+    <tr class="Label" style="border-bottom:1px black solid;">
+      <th> </th> <th> </th> <th> </th> <th> </th>
+	  <th>H </th> <th>P </th> <th>C </th>
+	  <th>H </th> <th>P </th> <th>C </th>
+      <th>Rate </th> <th>Range </th> <th>Spread (/100m) </th>
+	  <th>F </th> <th>W </th> <th>S </th> <th>M </th> <th>P </th>
+	  <th> </th>
+	</tr>
+</thead>
+	""")
 	for template in templates:
 		f.write(WriteUnit(template, templates[template]))
-
 	f.write("</table>")
 
 
 
-	############################################################
-	f.write("\n\n<h2>Units Specializations</h2>\n")
-	f.write("<p class=\"desc\">This table compares each template to its parent, showing the differences between the two.<br/>Note that like any table, you can copy/paste this in Excel (or Numbers or ...) and sort it.</p>")
-
-
+	# Write unit specialization
 	#Sort them by civ and write them in a table.
-	f.write("<table id=\"TemplateParentComp\">\n")
-	f.write("<thead><tr>")
-	f.write("<th></th><th></th><th>HP</th>	<th>BuildTime</th>	<th>Speed</th>	<th colspan=\"3\">Resistance</th>	<th colspan=\"6\">Attack</th>												<th colspan=\"5\">Costs</th>						<th>Civ</th>	</tr>\n")
-	f.write("<tr class=\"Label\" style=\"border-bottom:1px black solid;\">")
-	f.write("<th></th><th></th><th></th>	<th></th>			<th></th>		<th>H</th><th>P</th><th>C</th>	<th>H</th><th>P</th><th>C</th><th>Rate</th><th>Range</th><th>Spread</th>	<th>F</th><th>W</th><th>S</th><th>M</th><th>P</th>	<th></th>		</tr>\n<tr></thead>")
+	# TODO: pre-compute the diffs then render, filtering out the non-interesting ones
+	#
+	f.write("""
+<h2>Units Specializations
+</h2>
+<p class="desc">This table compares each template to its parent, showing the differences between the two.
+  <br/>Note that like any table, you can copy/paste this in Excel (or Numbers or ...) and sort it.
+</p>
+<table id="TemplateParentComp">
+  <thead>
+    <tr>
+      <th> </th> <th> </th> <th>HP </th> <th>BuildTime </th> <th>Speed (/100m) </th>
+	  <th colspan="3">Resistance </th>
+	  <th colspan="6">Attack </th>
+	  <th colspan="5">Costs </th>
+	  <th>Civ </th>
+	</tr>
+    <tr class="Label" style="border-bottom:1px black solid;">
+      <th> </th> <th> </th> <th> </th> <th> </th> <th> </th>
+	  <th>H </th> <th>P </th> <th>C </th>
+	  <th>H </th> <th>P </th> <th>C </th>
+      <th>Rate </th> <th>Range </th> <th>Spread </th>
+	  <th>F </th> <th>W </th> <th>S </th> <th>M </th> <th>P </th>
+	  <th> </th>
+	</tr>
+    <tr>
+  </thead>
+	""")
 	for parent in TemplatesByParent:
 		TemplatesByParent[parent].sort(key=lambda x : Civs.index(x[1]["Civ"]))
 		for tp in TemplatesByParent[parent]:
@@ -517,10 +554,17 @@ def writeHTML():
 	f.write("<table/>")
 
 	# Table of unit having or not having some units.
-	f.write("\n\n<h2>Roster Variety</h2>\n")
-	f.write("<p class=\"desc\">This table show which civilizations have units who derive from each loaded generic template.<br/>Green means 1 deriving unit, blue means 2, black means 3 or more.<br/>The total is the total number of loaded units for this civ, which may be more than the total of units inheriting from loaded templates.</p>")
-	f.write("<table class=\"CivRosterVariety\">\n")
-	f.write("<tr><th>Template</th>\n")
+	f.write("""
+<h2>Roster Variety
+</h2>
+<p class="desc">This table show which civilizations have units who derive from each loaded generic template.
+  <br/>Green means 1 deriving unit, blue means 2, black means 3 or more.
+  <br/>The total is the total number of loaded units for this civ, which may be more than the total of units inheriting from loaded templates.
+</p>
+<table class="CivRosterVariety">
+  <tr>
+    <th>Template </th>
+""")
 	for civ in Civs:
 		f.write("<td class=\"vertical-text\">" + civ + "</td>\n")
 	f.write("</tr>\n")
@@ -558,63 +602,63 @@ def writeHTML():
 	# Add a simple script to allow filtering on sorting directly in the HTML page.
 	if AddSortingOverlay:
 		f.write("""
-	<script src="tablefilter/tablefilter.js"></script>
-	<script data-config>
-	var cast = function (val) {
-	console.log(val);                       if (+val != val)
-			return -999999999999;
-		return +val;
-	}
+<script src="tablefilter/tablefilter.js"></script>
+<script data-config>
+var cast = function (val) {
+console.log(val);                       if (+val != val)
+		return -999999999999;
+	return +val;
+}
 
 
-	var filtersConfig = {
-		base_path: 'tablefilter/',
-		col_0: 'checklist',
-		alternate_rows: true,
-		rows_counter: true,
-		btn_reset: true,
-		loader: false,
-		status_bar: false,
-		mark_active_columns: true,
-		highlight_keywords: true,
-		col_number_format: [
-			'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US'
-		],
-		filters_row_index: 2,
-		headers_row_index: 1,
-		extensions:[{                           name: 'sort',                           types: [       'string', 'us', 'us', 'us', 'us', 'us', 'us', 'mytype', 'mytype', 'mytype', 'mytype', 'mytype', 'mytype', 'us', 'us', 'us', 'us', 'us', 'string'                         ],                              on_sort_loaded: function(o, sort) {    sort.addSortType('mytype',cast);                         },                      }],
-		col_widths: [
-			null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,'120px'
-		],
-	};
-	var tf = new TableFilter('genericTemplates', filtersConfig,2);
-	tf.init();
+var filtersConfig = {
+	base_path: 'tablefilter/',
+	col_0: 'checklist',
+	alternate_rows: true,
+	rows_counter: true,
+	btn_reset: true,
+	loader: false,
+	status_bar: false,
+	mark_active_columns: true,
+	highlight_keywords: true,
+	col_number_format: [
+		'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US'
+	],
+	filters_row_index: 2,
+	headers_row_index: 1,
+	extensions:[{                           name: 'sort',                           types: [       'string', 'us', 'us', 'us', 'us', 'us', 'us', 'mytype', 'mytype', 'mytype', 'mytype', 'mytype', 'mytype', 'us', 'us', 'us', 'us', 'us', 'string'                         ],                              on_sort_loaded: function(o, sort) {    sort.addSortType('mytype',cast);                         },                      }],
+	col_widths: [
+		null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,'120px'
+	],
+};
+var tf = new TableFilter('genericTemplates', filtersConfig,2);
+tf.init();
 
-		var secondFiltersConfig = {
-		base_path: 'tablefilter/',
-		col_0: 'checklist',
-		col_19: 'checklist',
-		alternate_rows: true,
-		rows_counter: true,
-		btn_reset: true,
-		loader: false,
-		status_bar: false,
-		mark_active_columns: true,
-		highlight_keywords: true,
-		col_number_format: [
-			null, null, 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', null
-		],
-		filters_row_index: 2,
-		headers_row_index: 1,
-		extensions:[{                           name: 'sort',                           types: [       'string', 'string', 'us', 'us', 'us', 'us', 'us', 'us', 'typetwo', 'typetwo', 'typetwo', 'typetwo', 'typetwo', 'typetwo', 'us', 'us', 'us', 'us', 'us', 'string'                         ],                              on_sort_loaded: function(o, sort) {                                     sort.addSortType('typetwo',cast);                               },     }],
-		col_widths: [
-			null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null
-		],
-	};
-			var tf2 = new TableFilter('TemplateParentComp', secondFiltersConfig,2);
-	tf2.init();
+	var secondFiltersConfig = {
+	base_path: 'tablefilter/',
+	col_0: 'checklist',
+	col_19: 'checklist',
+	alternate_rows: true,
+	rows_counter: true,
+	btn_reset: true,
+	loader: false,
+	status_bar: false,
+	mark_active_columns: true,
+	highlight_keywords: true,
+	col_number_format: [
+		null, null, 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', null
+	],
+	filters_row_index: 2,
+	headers_row_index: 1,
+	extensions:[{                           name: 'sort',                           types: [       'string', 'string', 'us', 'us', 'us', 'us', 'us', 'us', 'typetwo', 'typetwo', 'typetwo', 'typetwo', 'typetwo', 'typetwo', 'us', 'us', 'us', 'us', 'us', 'string'                         ],                              on_sort_loaded: function(o, sort) {                                     sort.addSortType('typetwo',cast);                               },     }],
+	col_widths: [
+		null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null
+	],
+};
+		var tf2 = new TableFilter('TemplateParentComp', secondFiltersConfig,2);
+tf2.init();
 
-	</script>
+</script>
 	""")
 
 
