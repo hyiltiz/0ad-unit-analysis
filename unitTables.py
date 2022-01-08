@@ -337,31 +337,36 @@ def WriteColouredDiff(file, diff, PositOrNegat):
 		raise Exception("Unknown diff change; did you add or delete code?").with_traceback(tracebackobj)
 
 	
-def computeTemplatesByParent(templates:dict, Civs:list, CivTemplates:dict):
-	"""Get them in the array"""
-	# Civs:list -> CivTemplates:dict -> templates:dict -> TemplatesByParent
-	TemplatesByParent = {}
-	for Civ in Civs:
-		for CivUnitTemplate in CivTemplates[Civ]:
-			parent = CivTemplates[Civ][CivUnitTemplate]["Parent"]
-			if parent in templates and templates[parent]["Civ"] == None:
-				if parent not in TemplatesByParent:
-					TemplatesByParent[parent] = []
-				TemplatesByParent[parent].append( (CivUnitTemplate,CivTemplates[Civ][CivUnitTemplate]))
-
-	# import IPython; IPython.embed()
-	return TemplatesByParent
+def computeTemplates(LoadTemplatesIfParent):
+	"""Loops over template XMLs and selectively insert into templates dict."""
+	pwd = os.getcwd()
+	os.chdir(basePath)
+	templates = {}
+	for template in list(glob.glob('template_*.xml')):
+		if os.path.isfile(template):
+			found = False
+			for possParent in LoadTemplatesIfParent:
+				if hasParentTemplate(template, possParent):
+					found = True
+					break
+			if found == True:
+				templates[template] = CalcUnit(template)
+				# f.write(WriteUnit(template, templates[template]))
+	os.chdir(pwd)
+	return templates
 
 
 def computeCivTemplates(template: dict, Civs: list):
 	"""Load Civ specific templates"""
+	pwd = os.getcwd()
+	os.chdir(basePath)
+
 	CivTemplates = {}
 
 	for Civ in Civs:
 		CivTemplates[Civ] = {}
 		# Load all templates that start with that civ indicator
-		# import IPython; IPython.embed()
-		for template in list(glob.glob('units/' + Civ + '_*.xml')):
+		for template in list(glob.glob('units/' + Civ + '/*.xml')):
 			if os.path.isfile(template):
 
 				# filter based on FilterOut
@@ -387,26 +392,25 @@ def computeCivTemplates(template: dict, Civs: list):
 				# load template
 				CivTemplates[Civ][template] = unit
 
+	os.chdir(pwd)
 	return CivTemplates
 
+def computeTemplatesByParent(templates:dict, Civs:list, CivTemplates:dict):
+	"""Get them in the array"""
+	# Civs:list -> CivTemplates:dict -> templates:dict -> TemplatesByParent
+	TemplatesByParent = {}
+	for Civ in Civs:
+		for CivUnitTemplate in CivTemplates[Civ]:
+			parent = CivTemplates[Civ][CivUnitTemplate]["Parent"]
+			if parent in templates and templates[parent]["Civ"] == None:
+				if parent not in TemplatesByParent:
+					TemplatesByParent[parent] = []
+				TemplatesByParent[parent].append( (CivUnitTemplate,CivTemplates[Civ][CivUnitTemplate]))
 
-def computeTemplates(LoadTemplatesIfParent):
-	"""Loops over template XMLs and selectively insert into templates dict."""
-	pwd = os.getcwd()
-	os.chdir(basePath)
-	templates = {}
-	for template in list(glob.glob('template_*.xml')):
-		if os.path.isfile(template):
-			found = False
-			for possParent in LoadTemplatesIfParent:
-				if hasParentTemplate(template, possParent):
-					found = True
-					break
-			if found == True:
-				templates[template] = CalcUnit(template)
-				# f.write(WriteUnit(template, templates[template]))
-	os.chdir(pwd)
-	return templates
+	# debug after CivTemplates are non-empty
+	# import IPython; IPython.embed()
+	return TemplatesByParent
+
 
 
 ############################################################
