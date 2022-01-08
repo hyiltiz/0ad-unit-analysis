@@ -166,7 +166,6 @@ def CalcUnit(UnitName, existingUnit = None):
 			unit['PrepRate']["Melee"] = NumericStatProcess(unit['PrepRate']["Melee"], Template.find("./Attack/Melee/PrepareTime"))
 		for atttype in AttackTypes:
 			if (Template.find("./Attack/Melee/Damage/"+atttype) != None):
-				# import IPython; IPython.embed()
 				unit['Attack']['Melee'][atttype] = NumericStatProcess(unit['Attack']['Melee'][atttype], Template.find("./Attack/Melee/Damage/"+atttype))
 		if (Template.find("./Attack/Melee/Bonuses") != None):
 			for Bonus in Template.find("./Attack/Melee/Bonuses"):
@@ -229,12 +228,7 @@ def CalcUnit(UnitName, existingUnit = None):
 		for atttype in AttackTypes:
 			extracted_resistance = Template.find("./Resistance/Entity/Damage/"+atttype)
 			if (extracted_resistance != None):
-				# import IPython; IPython.embed()
 				unit['Resistance'][atttype] = NumericStatProcess(unit['Resistance'][atttype], extracted_resistance)
-	else:
-		if Name == 'template_unit_cavalry.xml':
-			# import IPython; IPython.embed()
-			pass
 
 	if (Template.find("./UnitMotion") != None):
 		if (Template.find("./UnitMotion/WalkSpeed") != None):
