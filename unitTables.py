@@ -320,7 +320,7 @@ def WriteColouredDiff(file, diff, PositOrNegat):
 	elif (PositOrNegat == "negative"):
 		file.write("<td><span style=\"color:rgb(" +("200,200,200" if diff == 0 else ("180,0,0" if diff < 0 else "0,150,0")) + ");\">" + cleverParse(diff) + "</span></td>")
 	else:
-		complain
+		raise Exception("Unknown diff change; did you add or delete code?").with_traceback(tracebackobj)
 
 
 ############################################################
