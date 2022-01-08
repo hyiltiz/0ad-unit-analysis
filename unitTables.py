@@ -72,12 +72,28 @@ def hasParentTemplate(UnitName, parentName):
 
 	found = False
 	Name = UnitName
+	# print('\n------------------------')
+	# print(f'Testing if unit {UnitName} has parent {parentName}')
+
+	# parent_str = 'parent '
 	while found != True and Template.getroot().get("parent") != None:
-		Name = Template.getroot().get("parent") + ".xml"
+		longName = Template.getroot().get("parent") + ".xml"
+
+		# A25 uses unit class/category prefixed to the unit name
+		# separated by | We strip these categories for now. The | syntax
+		# gives a unit its "category" (like merc_cav, merc_inf, hoplite,
+		# builder, shrine, civ/athen). This can be used later for
+		# classification
+
+		Name = longName.split('|')[-1]
+		# print(f'Unit root {parent_str}is {Name}, cleaned from {longName}')
 		if Name == parentName:
+			# print(f'It matches tested parent.')
 			return True
 		Template = ET.parse(Name)
+		# parent_str += 'parent '
 
+	# print(f'Unit {UnitName} has no parent {parentName}.')
 	return False
 
 def NumericStatProcess(unitValue, templateValue):
@@ -109,8 +125,13 @@ def CalcUnit(UnitName, existingUnit = None):
 	
 	# Recursively get data from our parent which we'll override.
 	if (Template.getroot().get("parent") != None):
-		unit = CalcUnit(Template.getroot().get("parent") + ".xml", unit)
-		unit["Parent"] = Template.getroot().get("parent") + ".xml"
+		# A25 uses unit class/category prefixed to the unit name separated by |
+		# We strip these categories for now
+		# This can be used later for classification
+		Name = Template.getroot().get("parent").split('|')[-1] + ".xml"
+
+		unit = CalcUnit(Name, unit)
+		unit["Parent"] = Name
 
 	if (Template.find("./Identity/Civ") != None):
 		unit['Civ'] = Template.find("./Identity/Civ").text
