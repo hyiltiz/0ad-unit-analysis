@@ -60,6 +60,7 @@ def htout(file, value):
 	file.write("<p>" + value + "</p>\n" )
 
 def fastParse(templateName):
+	"""Run ET.parse() with memoising in a global table."""
 	if templateName in globalTemplatesList:
 		return globalTemplatesList[templateName]
 	globalTemplatesList[templateName] = ET.parse(templateName)
@@ -93,8 +94,8 @@ def NumericStatProcess(unitValue, templateValue):
 	return unitValue
 
 
-# This function parses the entity values manually.
 def CalcUnit(UnitName, existingUnit = None):
+	"""This function parses the entity values recursively through fastParse()."""
 	unit = { 'HP' : "0", "BuildTime" : "0", "Cost" : { 'food' : "0", "wood" : "0", "stone" : "0", "metal" : "0", "population" : "0"},
 	'Attack' : { "Melee" : { "Hack" : 0, "Pierce" : 0, "Crush" : 0 }, "Ranged" : { "Hack" : 0, "Pierce" : 0, "Crush" : 0 } },
 	'RepeatRate' : {"Melee" : "0", "Ranged" : "0"},'PrepRate' : {"Melee" : "0", "Ranged" : "0"}, "Armour" : { "Hack" : 0, "Pierce" : 0, "Crush" : 0},
