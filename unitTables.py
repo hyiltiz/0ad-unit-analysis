@@ -355,17 +355,18 @@ def computeTemplatesByParent(templates:dict, Civs:list, CivTemplates:dict):
 					TemplatesByParent[parent] = []
 				TemplatesByParent[parent].append( (CivUnitTemplate,CivTemplates[Civ][CivUnitTemplate]))
 
-	import IPython; IPython.embed()
+	# import IPython; IPython.embed()
 	return TemplatesByParent
 
 
-def computeCivTemplates(template: dict, Civs: list)
+def computeCivTemplates(template: dict, Civs: list):
 	"""Load Civ specific templates"""
 	CivTemplates = {}
 
 	for Civ in Civs:
 		CivTemplates[Civ] = {}
 		# Load all templates that start with that civ indicator
+		# import IPython; IPython.embed()
 		for template in list(glob.glob('units/' + Civ + '_*.xml')):
 			if os.path.isfile(template):
 
@@ -395,6 +396,22 @@ def computeCivTemplates(template: dict, Civs: list)
 	return CivTemplates
 
 
+def computeTemplates(LoadTemplatesIfParent):
+	"""Loops over template XMLs and selectively insert into templates dict."""
+	templates = {}
+	for template in list(glob.glob('template_*.xml')):
+		if os.path.isfile(template):
+			found = False
+			for possParent in LoadTemplatesIfParent:
+				if hasParentTemplate(template, possParent):
+					found = True
+					break
+			if found == True:
+				templates[template] = CalcUnit(template)
+				# f.write(WriteUnit(template, templates[template]))
+	return templates
+
+
 ############################################################
 ############################################################
 # Create the HTML file
@@ -410,7 +427,6 @@ os.chdir(basePath)
 ############################################################
 # Load generic templates
 
-templates = {}
 
 htbout(f,"h2", "Units")
 
@@ -420,16 +436,9 @@ f.write("<th></th><th>HP</th>	<th>BuildTime</th>	<th>Speed(walk)</th>	<th colspa
 f.write("<tr class=\"Label\" style=\"border-bottom:1px black solid;\">")
 f.write("<th></th><th></th>		<th></th>			<th></th>				<th>H</th><th>P</th><th>C</th>	<th>H</th><th>P</th><th>C</th><th>Rate</th><th>Range</th><th>Spread\n(/100m)</th>	<th>F</th><th>W</th><th>S</th><th>M</th><th>P</th>	<th></th>		</tr>\n</thead>\n")
 
-for template in list(glob.glob('template_*.xml')):
-	if os.path.isfile(template):
-		found = False
-		for possParent in LoadTemplatesIfParent:
-			if hasParentTemplate(template, possParent):
-				found = True
-				break
-		if found == True:
-			templates[template] = CalcUnit(template)
-			f.write(WriteUnit(template, templates[template]))
+templates = computeTemplates(LoadTemplatesIfParent)
+for template in templates:
+	f.write(WriteUnit(template, templates[template]))
 
 f.write("</table>")
 
