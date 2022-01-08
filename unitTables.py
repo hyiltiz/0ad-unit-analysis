@@ -398,6 +398,8 @@ def computeCivTemplates(template: dict, Civs: list):
 
 def computeTemplates(LoadTemplatesIfParent):
 	"""Loops over template XMLs and selectively insert into templates dict."""
+	pwd = os.getcwd()
+	os.chdir(basePath)
 	templates = {}
 	for template in list(glob.glob('template_*.xml')):
 		if os.path.isfile(template):
@@ -409,10 +411,16 @@ def computeTemplates(LoadTemplatesIfParent):
 			if found == True:
 				templates[template] = CalcUnit(template)
 				# f.write(WriteUnit(template, templates[template]))
+	os.chdir(pwd)
 	return templates
 
 
 ############################################################
+## Pre-compute all tables
+templates = computeTemplates(LoadTemplatesIfParent)
+CivTemplates = computeCivTemplates(templates, Civs)
+TemplatesByParent = computeTemplatesByParent(templates, Civs, CivTemplates)
+
 ############################################################
 # Create the HTML file
 
@@ -422,7 +430,6 @@ f.write("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\">\n<html>\n<head>\n	
 htbout(f,"h1","Unit Summary Table")
 f.write("\n")
 
-os.chdir(basePath)
 
 ############################################################
 # Load generic templates
@@ -435,21 +442,17 @@ f.write("<thead><tr>")
 f.write("<th></th><th>HP</th>	<th>BuildTime</th>	<th>Speed(walk)</th>	<th colspan=\"3\">Resistance</th>	<th colspan=\"6\">Attack (DPS)</th>													<th colspan=\"5\">Costs</th>						<th>Efficient Against</th> 	</tr>\n")
 f.write("<tr class=\"Label\" style=\"border-bottom:1px black solid;\">")
 f.write("<th></th><th></th>		<th></th>			<th></th>				<th>H</th><th>P</th><th>C</th>	<th>H</th><th>P</th><th>C</th><th>Rate</th><th>Range</th><th>Spread\n(/100m)</th>	<th>F</th><th>W</th><th>S</th><th>M</th><th>P</th>	<th></th>		</tr>\n</thead>\n")
-
-templates = computeTemplates(LoadTemplatesIfParent)
 for template in templates:
 	f.write(WriteUnit(template, templates[template]))
 
 f.write("</table>")
 
 
-CivTemplates = computeCivTemplates(template, Civs)
 
 ############################################################
 f.write("\n\n<h2>Units Specializations</h2>\n")
 f.write("<p class=\"desc\">This table compares each template to its parent, showing the differences between the two.<br/>Note that like any table, you can copy/paste this in Excel (or Numbers or ...) and sort it.</p>")
 
-TemplatesByParent = computeTemplatesByParent(templates, Civs, CivTemplates)
 
 #Sort them by civ and write them in a table.
 f.write("<table id=\"TemplateParentComp\">\n")
