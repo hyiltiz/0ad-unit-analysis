@@ -54,6 +54,15 @@ basePath = os.path.realpath(__file__).replace("unitTables.py","") + "../../../bi
 # For performance purposes, cache opened templates files.
 globalTemplatesList = {}
 
+def showChild(root):
+	"""root is of ElementTree.getroot() type"""
+	print('----------------  Children:  ----------------')
+	[print(child.tag, child.attrib) for child in root]
+
+	print('\n--------------  Neighbours:  --------------')
+	[print(neighbor.attrib) for neighbor in root.iter('neighbor')]
+		
+
 def htbout(file, balise, value):
 	file.write("<" + balise + ">" + value + "</" + balise + ">\n" )
 def htout(file, value):
@@ -212,9 +221,19 @@ def CalcUnit(UnitName, existingUnit = None):
 
 
 	if (Template.find("Resistance") != None):
+	# Armor is renamed into Resistance and stored insdie a new node Entity
+	# list(ET.parse('template_unit_cavalry.xml').getroot().find('Resistance/Entity/Damage'))
+	# list(ET.parse('template_unit_cavalry.xml').find('Resistance/Entity/Damage'))
+
 		for atttype in AttackTypes:
-			if (Template.find("./Resistance/"+atttype) != None):
-				unit['Resistance'][atttype] = NumericStatProcess(unit['Resistance'][atttype], Template.find("./Resistance/"+atttype))
+			extracted_resistance = Template.find("./Resistance/Entity/Damage/"+atttype)
+			if (extracted_resistance != None):
+				# import IPython; IPython.embed()
+				unit['Resistance'][atttype] = NumericStatProcess(unit['Resistance'][atttype], extracted_resistance)
+	else:
+		if Name == 'template_unit_cavalry.xml':
+			# import IPython; IPython.embed()
+			pass
 
 	if (Template.find("./UnitMotion") != None):
 		if (Template.find("./UnitMotion/WalkSpeed") != None):
