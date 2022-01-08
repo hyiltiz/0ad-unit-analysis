@@ -35,7 +35,7 @@ LoadTemplatesIfParent = ["template_unit_infantry.xml", "template_unit_cavalry.xm
 
 # Those describe Civs to analyze.
 # The script will load all entities that derive (to the nth degree) from one of the above templates.
-Civs = ["athen", "brit", "cart", "gaul", "iber", "kush", "mace", "maur", "pers", "ptol", "rome", "sele", "spart"]
+Civs = ["athen", "brit", "cart", "gaul", "iber", "kush", "mace", "maur", "pers", "ptol", "rome", "sele", "spart", "gaia"]
 
 # Remote Civ templates with those strings in their name.
 FilterOut = ["marian", "thureophoros", "thorakites", "kardakes"]
@@ -402,13 +402,17 @@ def computeTemplatesByParent(templates:dict, Civs:list, CivTemplates:dict):
 	for Civ in Civs:
 		for CivUnitTemplate in CivTemplates[Civ]:
 			parent = CivTemplates[Civ][CivUnitTemplate]["Parent"]
-			if parent in templates and templates[parent]["Civ"] == None:
+
+			# We have the following constant equality
+			# templates[*]["Civ"] === gaia 
+			# if parent in templates and templates[parent]["Civ"] == None:
+			if parent in templates:
 				if parent not in TemplatesByParent:
 					TemplatesByParent[parent] = []
 				TemplatesByParent[parent].append( (CivUnitTemplate,CivTemplates[Civ][CivUnitTemplate]))
 
 	# debug after CivTemplates are non-empty
-	# import IPython; IPython.embed()
+	import IPython; IPython.embed()
 	return TemplatesByParent
 
 
