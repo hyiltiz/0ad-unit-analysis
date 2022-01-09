@@ -638,7 +638,8 @@ def writeHTML():
 <h2>Roster Variety
 </h2>
 <p class="desc">This table show which civilizations have units who derive from each loaded generic template.
-  <br/>Green means 1 deriving unit, blue means 2, black means 3 or more.
+  <br/>Grey means the civilization has no unit derived from a generic template;
+  <br/>dark green means 1 derived unit, mid-tone green means 2, bright green means 3 or more.
   <br/>The total is the total number of loaded units for this civ, which may be more than the total of units inheriting from loaded templates.
 </p>
 <table class="CivRosterVariety">
@@ -661,13 +662,13 @@ def writeHTML():
 				if temp[1]["Civ"] == civ:
 					found += 1
 			if found == 1:
-				f.write("<td style=\"background-color:rgb(0,230,0);\"></td>")
+				f.write("<td style=\"background-color:rgb(0,90,0);\"></td>")
 			elif found == 2:
-				f.write("<td style=\"background-color:rgb(0,0,200);\"></td>")
+				f.write("<td style=\"background-color:rgb(0,150,0);\"></td>")
 			elif found >= 3:
-				f.write("<td style=\"background-color:rgb(0,0,0);\"></td>")
+				f.write("<td style=\"background-color:rgb(0,255,0);\"></td>")
 			else:
-				f.write("<td style=\"background-color:rgb(235,0,0);\"></td>")
+				f.write("<td style=\"background-color:rgb(200,200,200);\"></td>")
 		f.write("</tr>\n")
 	f.write("<tr style=\"margin-top:2px;border-top:2px #aaa solid;\"><th style=\"text-align:right; padding-right:10px;\">Total:</th>\n")
 	for civ in Civs:
