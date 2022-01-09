@@ -325,7 +325,7 @@ def SortFn(A):
 	return sortVal
 
 
-def WriteColouredDiff_(file, diff, isChanged):
+def WriteColouredDiff(file, diff, isChanged):
 	"""helper to write coloured text.
 	diff value must always be computed as a unit_spec - unit_generic.
 	A positive imaginary part represents advantageous trait.
@@ -578,20 +578,20 @@ def writeHTML():
 
 			# HP
 			diff = -1j+ (int(tp[1]["HP"]) - int(templates[parent]["HP"]))
-			isChanged = WriteColouredDiff_(ff, diff, isChanged)
+			isChanged = WriteColouredDiff(ff, diff, isChanged)
 
 			# Build Time
 			diff = +1j+ (int(tp[1]["BuildTime"]) - int(templates[parent]["BuildTime"]))
-			isChanged = WriteColouredDiff_(ff, diff, isChanged)
+			isChanged = WriteColouredDiff(ff, diff, isChanged)
 
 			# walk speed
 			diff = -1j+ (float(tp[1]["WalkSpeed"]) - float(templates[parent]["WalkSpeed"]))
-			isChanged = WriteColouredDiff_(ff, diff, isChanged)
+			isChanged = WriteColouredDiff(ff, diff, isChanged)
 
 			# Armor
 			for atype in AttackTypes:
 				diff = -1j+ (float(tp[1]["Resistance"][atype]) - float(templates[parent]["Resistance"][atype]))
-				isChanged = WriteColouredDiff_(ff, diff, isChanged)
+				isChanged = WriteColouredDiff(ff, diff, isChanged)
 
 			# Attack types (DPS) and rate.
 			attType = ("Ranged" if tp[1]["Ranged"] == True else "Melee")
@@ -599,23 +599,23 @@ def writeHTML():
 				for atype in AttackTypes:
 					myDPS = float(tp[1]["Attack"][attType][atype]) / (float(tp[1]["RepeatRate"][attType])/1000.0)
 					parentDPS = float(templates[parent]["Attack"][attType][atype]) / (float(templates[parent]["RepeatRate"][attType])/1000.0)
-					isChanged = WriteColouredDiff_(ff, -1j+ (myDPS - parentDPS), isChanged)
-				isChanged = WriteColouredDiff_(ff, -1j+ (float(tp[1]["RepeatRate"][attType])/1000.0 - float(templates[parent]["RepeatRate"][attType])/1000.0), isChanged)
+					isChanged = WriteColouredDiff(ff, -1j+ (myDPS - parentDPS), isChanged)
+				isChanged = WriteColouredDiff(ff, -1j+ (float(tp[1]["RepeatRate"][attType])/1000.0 - float(templates[parent]["RepeatRate"][attType])/1000.0), isChanged)
 				# range and spread
 				if tp[1]["Ranged"] == True:
-					isChanged = WriteColouredDiff_(ff, -1j+ (float(tp[1]["Range"]) - float(templates[parent]["Range"])), isChanged)
+					isChanged = WriteColouredDiff(ff, -1j+ (float(tp[1]["Range"]) - float(templates[parent]["Range"])), isChanged)
 					mySpread = float(tp[1]["Spread"])
 					parentSpread = float(templates[parent]["Spread"])
-					isChanged = WriteColouredDiff_(ff, +1j+ (mySpread - parentSpread), isChanged)
+					isChanged = WriteColouredDiff(ff, +1j+ (mySpread - parentSpread), isChanged)
 				else:
 					ff.write("<td></td><td></td>")
 			else:
 					ff.write("<td></td><td></td><td></td><td></td><td></td><td></td>")
 
 			for rtype in Resources:
-				isChanged = WriteColouredDiff_(ff, +1j+ (float(tp[1]["Cost"][rtype]) - float(templates[parent]["Cost"][rtype])), isChanged)
+				isChanged = WriteColouredDiff(ff, +1j+ (float(tp[1]["Cost"][rtype]) - float(templates[parent]["Cost"][rtype])), isChanged)
 
-			isChanged = WriteColouredDiff_(ff, +1j+ (float(tp[1]["Cost"]["population"]) - float(templates[parent]["Cost"]["population"])), isChanged)
+			isChanged = WriteColouredDiff(ff, +1j+ (float(tp[1]["Cost"]["population"]) - float(templates[parent]["Cost"]["population"])), isChanged)
 
 			ff.write("<td>" + tp[1]["Civ"] + "</td>")
 			ff.write("</tr>\n")
