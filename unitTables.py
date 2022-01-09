@@ -40,6 +40,9 @@ Civs = ["athen", "brit", "cart", "gaul", "iber", "kush", "mace", "maur", "pers",
 # Remote Civ templates with those strings in their name.
 FilterOut = ["marian", "thureophoros", "thorakites", "kardakes"]
 
+# In the Civilization specific units table, do you want to only show the units that are different from the generic templates?
+showChangedOnly = True
+
 # Sorting parameters for the "roster variety" table
 ComparativeSortByCav = True
 ComparativeSortByChamp = True
@@ -321,7 +324,7 @@ def SortFn(A):
 	return sortVal
 
 
-def WriteColouredDiff_(file, diff, PositOrNegat):
+def WriteColouredDiff_(file, diff, isChanged):
 	"""helper to write coloured text.
 	diff value must always be computed as a unit_spec - unit_generic.
 	A positive imaginary part represents advantageous trait.
@@ -334,11 +337,71 @@ def WriteColouredDiff_(file, diff, PositOrNegat):
 
 	isAdvantageous = diff.imag > 0
 	diff = diff.real
+	if diff != 0:
+		isChanged = True
+	else:
+		# do not change its value if one parameter is not changed (yet)
+		# some other parameter might be different
+		pass
+
 
 	if isAdvantageous:
 		file.write("<td><span style=\"color:rgb(" +("200,200,200" if diff == 0 else ("180,0,0" if diff > 0 else "0,150,0")) + ");\">" + cleverParse(diff) + "</span></td>")
 	else:
 		file.write("<td><span style=\"color:rgb(" +("200,200,200" if diff == 0 else ("180,0,0" if diff < 0 else "0,150,0")) + ");\">" + cleverParse(diff) + "</span></td>")
+
+	return isChanged
+
+
+def computeUnitEfficiencyDiff(TemplatesByParent, Civs):
+	efficiency_table = {}
+	for parent in TemplatesByParent:
+		TemplatesByParent[parent].sort(key=lambda x : Civs.index(x[1]["Civ"]))
+		for tp in TemplatesByParent[parent]:
+			# HP
+			diff = -1j+ (int(tp[1]["HP"]) - int(templates[parent]["HP"]))
+			efficiency_table[(parent, tp[0], "HP")] = diff
+			efficiency_table[(parent, tp[0], "HP")] = diff
+
+			# Build Time
+			diff = +1j+ (int(tp[1]["BuildTime"]) - int(templates[parent]["BuildTime"]))
+			efficiency_table[(parent, tp[0], "BuildTime")] = diff
+
+			# walk speed
+			diff = -1j+ (float(tp[1]["WalkSpeed"]) - float(templates[parent]["WalkSpeed"]))
+			efficiency_table[(parent, tp[0], "WalkSpeed")] = diff
+
+			# Armor
+			for atype in AttackTypes:
+				diff = -1j+ (float(tp[1]["Resistance"][atype]) - float(templates[parent]["Resistance"][atype]))
+				efficiency_table[(parent, tp[0], "Resistance/"+atype)] = diff
+
+			# Attack types (DPS) and rate.
+			attType = ("Ranged" if tp[1]["Ranged"] == True else "Melee")
+			if tp[1]["RepeatRate"][attType] != "0":
+				for atype in AttackTypes:
+					myDPS = float(tp[1]["Attack"][attType][atype]) / (float(tp[1]["RepeatRate"][attType])/1000.0)
+					parentDPS = float(templates[parent]["Attack"][attType][atype]) / (float(templates[parent]["RepeatRate"][attType])/1000.0)
+					diff = -1j+ (myDPS - parentDPS)
+					efficiency_table[(parent, tp[0], "Attack/"+attType+"/"+atype)] = diff
+				diff = -1j+ (float(tp[1]["RepeatRate"][attType])/1000.0 - float(templates[parent]["RepeatRate"][attType])/1000.0)
+				efficiency_table[(parent, tp[0], "Attack/"+attType+"/"+atype+"/RepeatRate")] = diff
+				# range and spread
+				if tp[1]["Ranged"] == True:
+					diff = -1j+ (float(tp[1]["Range"]) - float(templates[parent]["Range"]))
+					efficiency_table[(parent, tp[0], "Attack/"+attType+"/Ranged/Range")] = diff
+
+					diff = float(tp[1]["Spread"]) - float(templates[parent]["Spread"])
+					efficiency_table[(parent, tp[0], "Attack/"+attType+"/Ranged/Spread")] = diff
+
+			for rtype in Resources:
+				diff = +1j+ (float(tp[1]["Cost"][rtype]) - float(templates[parent]["Cost"][rtype]))
+				efficiency_table[(parent, tp[0], "Resources/" + rtype)] = diff
+
+			diff = +1j+ (float(tp[1]["Cost"]["population"]) - float(templates[parent]["Cost"]["population"]))
+			efficiency_table[(parent, tp[0], "Population")] = diff
+
+	return efficiency_table
 
 	
 def computeTemplates(LoadTemplatesIfParent):
@@ -424,7 +487,7 @@ def computeTemplatesByParent(templates:dict, Civs:list, CivTemplates:dict):
 templates = computeTemplates(LoadTemplatesIfParent)
 CivTemplates = computeCivTemplates(templates, Civs)
 TemplatesByParent = computeTemplatesByParent(templates, Civs, CivTemplates)
-
+efficiencyTable = computeUnitEfficiencyDiff(TemplatesByParent, Civs)  # use it for your own custom analysis
 
 
 ############################################################
@@ -500,32 +563,34 @@ def writeHTML():
 	  <th>F </th> <th>W </th> <th>S </th> <th>M </th> <th>P </th>
 	  <th> </th>
 	</tr>
-    <tr>
   </thead>
 	""")
 	for parent in TemplatesByParent:
 		TemplatesByParent[parent].sort(key=lambda x : Civs.index(x[1]["Civ"]))
 		for tp in TemplatesByParent[parent]:
-			f.write("<th style='font-size:10px'>" + parent.replace(".xml","").replace("template_","") + "</th>")
+			isChanged = False
+			ff = open(os.path.realpath(__file__).replace("unitTables.py","") + '.cache', 'w')
 
-			f.write("<td class=\"Sub\">" + tp[0].replace(".xml","").replace("units/","") + "</td>")
+			ff.write("<tr>")
+			ff.write("<th style='font-size:10px'>" + parent.replace(".xml","").replace("template_","") + "</th>")
+			ff.write("<td class=\"Sub\">" + tp[0].replace(".xml","").replace("units/","") + "</td>")
 
 			# HP
 			diff = -1j+ (int(tp[1]["HP"]) - int(templates[parent]["HP"]))
-			WriteColouredDiff_(f, diff, "negative")
+			isChanged = WriteColouredDiff_(ff, diff, isChanged)
 
 			# Build Time
 			diff = +1j+ (int(tp[1]["BuildTime"]) - int(templates[parent]["BuildTime"]))
-			WriteColouredDiff_(f, diff, "positive")
+			isChanged = WriteColouredDiff_(ff, diff, isChanged)
 
 			# walk speed
 			diff = -1j+ (float(tp[1]["WalkSpeed"]) - float(templates[parent]["WalkSpeed"]))
-			WriteColouredDiff_(f, diff, "negative")
+			isChanged = WriteColouredDiff_(ff, diff, isChanged)
 
 			# Armor
 			for atype in AttackTypes:
 				diff = -1j+ (float(tp[1]["Resistance"][atype]) - float(templates[parent]["Resistance"][atype]))
-				WriteColouredDiff_(f, diff, "negative")
+				isChanged = WriteColouredDiff_(ff, diff, isChanged)
 
 			# Attack types (DPS) and rate.
 			attType = ("Ranged" if tp[1]["Ranged"] == True else "Melee")
@@ -533,27 +598,38 @@ def writeHTML():
 				for atype in AttackTypes:
 					myDPS = float(tp[1]["Attack"][attType][atype]) / (float(tp[1]["RepeatRate"][attType])/1000.0)
 					parentDPS = float(templates[parent]["Attack"][attType][atype]) / (float(templates[parent]["RepeatRate"][attType])/1000.0)
-					WriteColouredDiff_(f, -1j+ (myDPS - parentDPS), "negative")
-				WriteColouredDiff_(f, -1j+ (float(tp[1]["RepeatRate"][attType])/1000.0 - float(templates[parent]["RepeatRate"][attType])/1000.0), "negative")
+					isChanged = WriteColouredDiff_(ff, -1j+ (myDPS - parentDPS), isChanged)
+				isChanged = WriteColouredDiff_(ff, -1j+ (float(tp[1]["RepeatRate"][attType])/1000.0 - float(templates[parent]["RepeatRate"][attType])/1000.0), isChanged)
 				# range and spread
 				if tp[1]["Ranged"] == True:
-					WriteColouredDiff_(f, -1j+ (float(tp[1]["Range"]) - float(templates[parent]["Range"])), "negative")
+					isChanged = WriteColouredDiff_(ff, -1j+ (float(tp[1]["Range"]) - float(templates[parent]["Range"])), isChanged)
 					mySpread = float(tp[1]["Spread"])
 					parentSpread = float(templates[parent]["Spread"])
-					WriteColouredDiff_(f, +1j+ (mySpread - parentSpread), "positive")
+					isChanged = WriteColouredDiff_(ff, +1j+ (mySpread - parentSpread), isChanged)
 				else:
-					f.write("<td></td><td></td>")
+					ff.write("<td></td><td></td>")
 			else:
-					f.write("<td></td><td></td><td></td><td></td><td></td><td></td>")
+					ff.write("<td></td><td></td><td></td><td></td><td></td><td></td>")
 
 			for rtype in Resources:
-				WriteColouredDiff_(f, +1j+ (float(tp[1]["Cost"][rtype]) - float(templates[parent]["Cost"][rtype])), "positive")
+				isChanged = WriteColouredDiff_(ff, +1j+ (float(tp[1]["Cost"][rtype]) - float(templates[parent]["Cost"][rtype])), isChanged)
 
-			WriteColouredDiff_(f, +1j+ (float(tp[1]["Cost"]["population"]) - float(templates[parent]["Cost"]["population"])), "positive")
+			isChanged = WriteColouredDiff_(ff, +1j+ (float(tp[1]["Cost"]["population"]) - float(templates[parent]["Cost"]["population"])), isChanged)
 
-			f.write("<td>" + tp[1]["Civ"] + "</td>")
+			ff.write("<td>" + tp[1]["Civ"] + "</td>")
+			ff.write("</tr>\n")
 
-			f.write("</tr>\n<tr>")
+			ff.close() # to actually write into the file
+			with open(os.path.realpath(__file__).replace("unitTables.py","") + '.cache', 'r') as ff:
+				unitStr = ff.read()
+
+			if showChangedOnly:
+				if isChanged:
+					f.write(unitStr)
+			else:
+				# print the full table if showChangedOnly is false
+				f.write(unitStr)
+
 	f.write("<table/>")
 
 	# Table of unit having or not having some units.
