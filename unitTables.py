@@ -320,21 +320,25 @@ def SortFn(A):
 		sortVal += 100 * Civs.index(A[1]["Civ"])
 	return sortVal
 
-# helper to write coloured text.
-def WriteColouredDiff(file, diff, PositOrNegat):
 
+def WriteColouredDiff_(file, diff, PositOrNegat):
+	"""helper to write coloured text.
+	diff value must always be computed as a unit_spec - unit_generic.
+	A positive imaginary part represents advantageous trait.
+	"""
 	def cleverParse(diff):
 		if float(diff) - int(diff) < 0.001:
 			return str(int(diff))
 		else:
 			return str("%.1f" % float(diff))
 
-	if (PositOrNegat == "positive"):
+	isAdvantageous = diff.imag > 0
+	diff = diff.real
+
+	if isAdvantageous:
 		file.write("<td><span style=\"color:rgb(" +("200,200,200" if diff == 0 else ("180,0,0" if diff > 0 else "0,150,0")) + ");\">" + cleverParse(diff) + "</span></td>")
-	elif (PositOrNegat == "negative"):
-		file.write("<td><span style=\"color:rgb(" +("200,200,200" if diff == 0 else ("180,0,0" if diff < 0 else "0,150,0")) + ");\">" + cleverParse(diff) + "</span></td>")
 	else:
-		raise Exception("Unknown diff change; did you add or delete code?").with_traceback(tracebackobj)
+		file.write("<td><span style=\"color:rgb(" +("200,200,200" if diff == 0 else ("180,0,0" if diff < 0 else "0,150,0")) + ");\">" + cleverParse(diff) + "</span></td>")
 
 	
 def computeTemplates(LoadTemplatesIfParent):
@@ -413,7 +417,6 @@ def computeTemplatesByParent(templates:dict, Civs:list, CivTemplates:dict):
 
 	# debug after CivTemplates are non-empty
 	return TemplatesByParent
-
 
 
 ############################################################
@@ -508,21 +511,21 @@ def writeHTML():
 			f.write("<td class=\"Sub\">" + tp[0].replace(".xml","").replace("units/","") + "</td>")
 
 			# HP
-			diff = int(tp[1]["HP"]) - int(templates[parent]["HP"])
-			WriteColouredDiff(f, diff, "negative")
+			diff = -1j+ (int(tp[1]["HP"]) - int(templates[parent]["HP"]))
+			WriteColouredDiff_(f, diff, "negative")
 
 			# Build Time
-			diff = int(tp[1]["BuildTime"]) - int(templates[parent]["BuildTime"])
-			WriteColouredDiff(f, diff, "positive")
+			diff = +1j+ (int(tp[1]["BuildTime"]) - int(templates[parent]["BuildTime"]))
+			WriteColouredDiff_(f, diff, "positive")
 
 			# walk speed
-			diff = float(tp[1]["WalkSpeed"]) - float(templates[parent]["WalkSpeed"])
-			WriteColouredDiff(f, diff, "negative")
+			diff = -1j+ (float(tp[1]["WalkSpeed"]) - float(templates[parent]["WalkSpeed"]))
+			WriteColouredDiff_(f, diff, "negative")
 
 			# Armor
 			for atype in AttackTypes:
-				diff = float(tp[1]["Resistance"][atype]) - float(templates[parent]["Resistance"][atype])
-				WriteColouredDiff(f, diff, "negative")
+				diff = -1j+ (float(tp[1]["Resistance"][atype]) - float(templates[parent]["Resistance"][atype]))
+				WriteColouredDiff_(f, diff, "negative")
 
 			# Attack types (DPS) and rate.
 			attType = ("Ranged" if tp[1]["Ranged"] == True else "Melee")
@@ -530,23 +533,23 @@ def writeHTML():
 				for atype in AttackTypes:
 					myDPS = float(tp[1]["Attack"][attType][atype]) / (float(tp[1]["RepeatRate"][attType])/1000.0)
 					parentDPS = float(templates[parent]["Attack"][attType][atype]) / (float(templates[parent]["RepeatRate"][attType])/1000.0)
-					WriteColouredDiff(f, myDPS - parentDPS, "negative")
-				WriteColouredDiff(f, float(tp[1]["RepeatRate"][attType])/1000.0 - float(templates[parent]["RepeatRate"][attType])/1000.0, "negative")
+					WriteColouredDiff_(f, -1j+ (myDPS - parentDPS), "negative")
+				WriteColouredDiff_(f, -1j+ (float(tp[1]["RepeatRate"][attType])/1000.0 - float(templates[parent]["RepeatRate"][attType])/1000.0), "negative")
 				# range and spread
 				if tp[1]["Ranged"] == True:
-					WriteColouredDiff(f, float(tp[1]["Range"]) - float(templates[parent]["Range"]), "negative")
+					WriteColouredDiff_(f, -1j+ (float(tp[1]["Range"]) - float(templates[parent]["Range"])), "negative")
 					mySpread = float(tp[1]["Spread"])
 					parentSpread = float(templates[parent]["Spread"])
-					WriteColouredDiff(f,  mySpread - parentSpread, "positive")
+					WriteColouredDiff_(f, +1j+ (mySpread - parentSpread), "positive")
 				else:
 					f.write("<td></td><td></td>")
 			else:
 					f.write("<td></td><td></td><td></td><td></td><td></td><td></td>")
 
 			for rtype in Resources:
-				WriteColouredDiff(f, float(tp[1]["Cost"][rtype]) - float(templates[parent]["Cost"][rtype]), "positive")
+				WriteColouredDiff_(f, +1j+ (float(tp[1]["Cost"][rtype]) - float(templates[parent]["Cost"][rtype])), "positive")
 
-			WriteColouredDiff(f, float(tp[1]["Cost"]["population"]) - float(templates[parent]["Cost"]["population"]), "positive")
+			WriteColouredDiff_(f, +1j+ (float(tp[1]["Cost"]["population"]) - float(templates[parent]["Cost"]["population"])), "positive")
 
 			f.write("<td>" + tp[1]["Civ"] + "</td>")
 
