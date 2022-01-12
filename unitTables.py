@@ -374,12 +374,17 @@ def WriteColouredDiff(file, diff, isChanged):
 		# some other parameter might be different
 		pass
 
-
-	if isAdvantageous:
-		file.write("<td><span style=\"color:rgb(" +("200,200,200" if diff == 0 else ("180,0,0" if diff > 0 else "0,150,0")) + ");\">" + cleverParse(diff) + "</span></td>")
+	if diff == 0:
+		rgb_str = "200,200,200"
+	elif isAdvantageous and diff > 0:
+		rgb_str = "180,0,0"
+	elif (not isAdvantageous) and diff < 0:
+		rgb_str = "180,0,0"
 	else:
-		file.write("<td><span style=\"color:rgb(" +("200,200,200" if diff == 0 else ("180,0,0" if diff < 0 else "0,150,0")) + ");\">" + cleverParse(diff) + "</span></td>")
+		rgb_str = "0,150,0"
 
+	file.write("""<td><span style="color:rgb({});">{}</span></td>
+	""".format(rgb_str, cleverParse(diff)))
 	return isChanged
 
 
