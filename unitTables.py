@@ -693,50 +693,71 @@ console.log(val);                       if (+val != val)
 
 
 var filtersConfig = {
-	base_path: 'tablefilter/',
-	col_0: 'checklist',
-	alternate_rows: true,
-	rows_counter: true,
-	btn_reset: true,
-	loader: false,
-	status_bar: false,
-	mark_active_columns: true,
-	highlight_keywords: true,
-	col_number_format: [
-		'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US'
-	],
-	filters_row_index: 2,
-	headers_row_index: 1,
-	extensions:[{                           name: 'sort',                           types: [       'string', 'us', 'us', 'us', 'us', 'us', 'us', 'mytype', 'mytype', 'mytype', 'mytype', 'mytype', 'mytype', 'us', 'us', 'us', 'us', 'us', 'string'                         ],                              on_sort_loaded: function(o, sort) {    sort.addSortType('mytype',cast);                         },                      }],
-	col_widths: [
-		null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,'120px'
-	],
+    base_path: "tablefilter/",
+    col_0: "checklist",
+    alternate_rows: true,
+    rows_counter: true,
+    btn_reset: true,
+    loader: false,
+    status_bar: false,
+    mark_active_columns: true,
+    highlight_keywords: true,
+    col_number_format: Array(22).fill("US"),
+    filters_row_index: 2,
+    headers_row_index: 1,
+    extensions: [
+        {
+            name: "sort",
+            types: ["string",
+                    ...Array(6).fill("us"),
+                    ...Array(6).fill("mytype"),
+                    ...Array(5).fill("us"),
+                    "string",
+                   ],
+            on_sort_loaded: function (o, sort) {
+                sort.addSortType("mytype", cast);
+            },
+        },
+    ],
+    col_widths: [...Array(18).fill(null), "120px"],
 };
+
 var tf = new TableFilter('genericTemplates', filtersConfig,2);
 tf.init();
 
-	var secondFiltersConfig = {
-	base_path: 'tablefilter/',
-	col_0: 'checklist',
-	col_19: 'checklist',
-	alternate_rows: true,
-	rows_counter: true,
-	btn_reset: true,
-	loader: false,
-	status_bar: false,
-	mark_active_columns: true,
-	highlight_keywords: true,
-	col_number_format: [
-		null, null, 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', 'US', null
-	],
-	filters_row_index: 2,
-	headers_row_index: 1,
-	extensions:[{                           name: 'sort',                           types: [       'string', 'string', 'us', 'us', 'us', 'us', 'us', 'us', 'typetwo', 'typetwo', 'typetwo', 'typetwo', 'typetwo', 'typetwo', 'us', 'us', 'us', 'us', 'us', 'string'                         ],                              on_sort_loaded: function(o, sort) {                                     sort.addSortType('typetwo',cast);                               },     }],
-	col_widths: [
-		null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null
-	],
+var secondFiltersConfig = {
+    base_path: "tablefilter/",
+    col_0: "checklist",
+    col_19: "checklist",
+    alternate_rows: true,
+    rows_counter: true,
+    btn_reset: true,
+    loader: false,
+    status_bar: false,
+    mark_active_columns: true,
+    highlight_keywords: true,
+    col_number_format: [null, null, ...Array(17).fill("US"), null],
+    filters_row_index: 2,
+    headers_row_index: 1,
+    extensions: [
+        {
+            name: "sort",
+            types: ["string", "string",
+                    ...Array(6).fill("us"),
+                    ...Array(6).fill("typetwo"),
+                    ...Array(5).fill("us"),
+                    "string",
+                   ],
+            on_sort_loaded: function (o, sort) {
+                sort.addSortType("typetwo", cast);
+            },
+        },
+    ],
+    col_widths: Array(20).fill(null),
 };
-		var tf2 = new TableFilter('TemplateParentComp', secondFiltersConfig,2);
+
+
+var tf2 = new TableFilter('TemplateParentComp', secondFiltersConfig,2);
 tf2.init();
 
 </script>
