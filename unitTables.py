@@ -32,28 +32,35 @@ Resources = ["food", "wood", "stone", "metal"]
 # The way this works is it tries all generic templates
 # But only loads those who have one of the following parents
 # EG adding "template_unit.xml" will load all units.
-LoadTemplatesIfParent = ["template_unit_infantry.xml", "template_unit_cavalry.xml", "template_unit_champion.xml", "template_unit_hero.xml"]
+LoadTemplatesIfParent = ["template_unit_infantry.xml",
+			 "template_unit_cavalry.xml",
+			 "template_unit_champion.xml",
+			 "template_unit_hero.xml"]
 
 # Those describe Civs to analyze.
 # The script will load all entities that derive (to the nth degree) from one of the above templates.
-Civs = ["athen", "brit", "cart", "gaul", "iber", "kush", "mace", "maur", "pers", "ptol", "rome", "sele", "spart", "gaia"]
+Civs = ["athen", "brit", "cart", "gaul", "iber", "kush", "mace", "maur", "pers",
+	"ptol", "rome", "sele", "spart", "gaia"]
 
 # Remote Civ templates with those strings in their name.
 FilterOut = ["marian", "thureophoros", "thorakites", "kardakes"]
 
-# In the Civilization specific units table, do you want to only show the units that are different from the generic templates?
+# In the Civilization specific units table, do you want to only show the units
+# that are different from the generic templates?
 showChangedOnly = True
 
 # Sorting parameters for the "roster variety" table
 ComparativeSortByCav = True
 ComparativeSortByChamp = True
-SortTypes = ["Support", "Pike", "Spear", "Sword", "Archer", "Javelin", "Sling", "Elephant"]	# Classes
+SortTypes = ["Support", "Pike", "Spear", "Sword", "Archer", "Javelin", "Sling",
+	     "Elephant"]	# Classes
 
 # Disable if you want the more compact basic data. Enable to allow filtering and sorting in-place.
 AddSortingOverlay = True
 
 # This is the path to the /templates/ folder to consider. Change this for mod support.
-basePath = os.path.realpath(__file__).replace("unitTables.py","") + "../../../binaries/data/mods/public/simulation/templates/"
+basePath = os.path.realpath(__file__).replace("unitTables.py","") + \
+	"../../../binaries/data/mods/public/simulation/templates/"
 
 # For performance purposes, cache opened templates files.
 globalTemplatesList = {}
@@ -126,11 +133,29 @@ def NumericStatProcess(unitValue, templateValue):
 
 def CalcUnit(UnitName, existingUnit = None):
 	"""This function parses the entity values recursively through fastParse()."""
-	unit = { 'HP' : "0", "BuildTime" : "0", "Cost" : { 'food' : "0", "wood" : "0", "stone" : "0", "metal" : "0", "population" : "0"},
-	'Attack' : { "Melee" : { "Hack" : 0, "Pierce" : 0, "Crush" : 0 }, "Ranged" : { "Hack" : 0, "Pierce" : 0, "Crush" : 0 } },
-	'RepeatRate' : {"Melee" : "0", "Ranged" : "0"},'PrepRate' : {"Melee" : "0", "Ranged" : "0"}, "Resistance" : { "Hack" : 0, "Pierce" : 0, "Crush" : 0},
-	"Ranged" : False, "Classes" : [], "AttackBonuses" : {}, "Restricted" : [], "WalkSpeed" : 0, "Range" : 0, "Spread" : 0,
-	"Civ" : None }
+	unit = { 'HP' : "0",
+		 "BuildTime" : "0",
+		 "Cost" : { 'food' : "0",
+			    "wood" : "0",
+			    "stone" : "0",
+			    "metal" : "0",
+			    "population" : "0"
+			   },
+		 'Attack' : {
+			 "Melee" : { "Hack" : 0, "Pierce" : 0, "Crush" : 0 },
+			 "Ranged" : { "Hack" : 0, "Pierce" : 0, "Crush" : 0 }
+		 },
+		 'RepeatRate' : {"Melee" : "0", "Ranged" : "0"},
+		 'PrepRate' : {"Melee" : "0", "Ranged" : "0"},
+		 "Resistance" : { "Hack" : 0, "Pierce" : 0, "Crush" : 0},
+		 "Ranged" : False,
+		 "Classes" : [],
+		 "AttackBonuses" : {},
+		 "Restricted" : [],
+		 "WalkSpeed" : 0,
+		 "Range" : 0,
+		 "Spread" : 0,
+		"Civ" : None }
 	
 	if (existingUnit != None):
 		unit = existingUnit
@@ -151,17 +176,20 @@ def CalcUnit(UnitName, existingUnit = None):
 		unit['Civ'] = Template.find("./Identity/Civ").text
 
 	if (Template.find("./Health/Max") != None):
-		unit['HP'] = NumericStatProcess(unit['HP'], Template.find("./Health/Max"))
+		unit['HP'] = NumericStatProcess(unit['HP'], \
+						Template.find("./Health/Max"))
 
 	if (Template.find("./Cost/BuildTime") != None):
-		unit['BuildTime'] = NumericStatProcess(unit['BuildTime'], Template.find("./Cost/BuildTime"))
+		unit['BuildTime'] = NumericStatProcess(unit['BuildTime'], \
+						       Template.find("./Cost/BuildTime"))
 	
 	if (Template.find("./Cost/Resources") != None):
 		for type in list(Template.find("./Cost/Resources")):
 			unit['Cost'][type.tag] = NumericStatProcess(unit['Cost'][type.tag], type)
 
 	if (Template.find("./Cost/Population") != None):
-		unit['Cost']["population"] = NumericStatProcess(unit['Cost']["population"], Template.find("./Cost/Population"))
+		unit['Cost']["population"] = NumericStatProcess(unit['Cost']["population"], \
+								Template.find("./Cost/Population"))
 
 	if (Template.find("./Attack/Melee") != None):
 		if (Template.find("./Attack/Melee/RepeatTime") != None):
@@ -272,7 +300,8 @@ def WriteUnit(Name, UnitDict):
 
 	for atype in AttackTypes:
 		PercentValue = 1.0 - (0.9 ** float(UnitDict["Resistance"][atype]))
-		ret += "<td>" + str("%.0f" % float(UnitDict["Resistance"][atype])) + " / " + str("%.0f" % (PercentValue*100.0)) + "%</td>"
+		ret += "<td>" + str("%.0f" % float(UnitDict["Resistance"][atype])) + \
+			" / " + str("%.0f" % (PercentValue*100.0)) + "%</td>"
 
 	attType = ("Ranged" if UnitDict["Ranged"] == True else "Melee")
 	if UnitDict["RepeatRate"][attType] != "0":
