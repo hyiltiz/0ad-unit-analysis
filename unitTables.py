@@ -88,6 +88,12 @@ basePath = (
     + "../../../binaries/data/mods/public/simulation/templates/"
 )
 
+basePath = (
+    os.path.realpath(__file__).replace("unitTables.py", "")
+    + "/templates/"
+)
+
+
 # For performance purposes, cache opened templates files.
 globalTemplatesList = {}
 
