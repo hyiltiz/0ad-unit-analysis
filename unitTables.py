@@ -112,7 +112,7 @@ def htout(file, value):
 def fastParse(templateName):
     """Run ET.parse() with memoising in a global table."""
     if templateName in globalTemplatesList:
-	return globalTemplatesList[templateName]
+        return globalTemplatesList[templateName]
     globalTemplatesList[templateName] = ET.parse(templateName)
     return globalTemplatesList[templateName]
 
@@ -128,21 +128,21 @@ def hasParentTemplate(UnitName, parentName):
 
     # parent_str = 'parent '
     while found != True and Template.getroot().get("parent") != None:
-	longName = Template.getroot().get("parent") + ".xml"
+        longName = Template.getroot().get("parent") + ".xml"
 
-	# A25 uses unit class/category prefixed to the unit name
-	# separated by | We strip these categories for now. The | syntax
-	# gives a unit its "category" (like merc_cav, merc_inf, hoplite,
-	# builder, shrine, civ/athen). This can be used later for
-	# classification
+        # A25 uses unit class/category prefixed to the unit name
+        # separated by | We strip these categories for now. The | syntax
+        # gives a unit its "category" (like merc_cav, merc_inf, hoplite,
+        # builder, shrine, civ/athen). This can be used later for
+        # classification
 
-	Name = longName.split("|")[-1]
-	# print(f'Unit root {parent_str}is {Name}, cleaned from {longName}')
-	if Name == parentName:
-	    # print(f'It matches tested parent.')
-	    return True
-	Template = ET.parse(Name)
-	# parent_str += 'parent '
+        Name = longName.split("|")[-1]
+        # print(f'Unit root {parent_str}is {Name}, cleaned from {longName}')
+        if Name == parentName:
+            # print(f'It matches tested parent.')
+            return True
+        Template = ET.parse(Name)
+        # parent_str += 'parent '
 
     # print(f'Unit {UnitName} has no parent {parentName}.')
     return False
@@ -151,209 +151,209 @@ def hasParentTemplate(UnitName, parentName):
 def NumericStatProcess(unitValue, templateValue):
     val = float(templateValue.text)
     if not "op" in templateValue.attrib:
-	return val
+        return val
     if templateValue.attrib["op"] == "add":
-	unitValue += val
+        unitValue += val
     elif templateValue.attrib["op"] == "sub":
-	unitValue -= val
+        unitValue -= val
     elif templateValue.attrib["op"] == "mul":
-	unitValue *= val
+        unitValue *= val
     elif templateValue.attrib["op"] == "div":
-	unitValue /= val
+        unitValue /= val
     return unitValue
 
 
 def CalcUnit(UnitName, existingUnit=None):
     """This function parses the entity values recursively through fastParse()."""
     unit = {
-	"HP": "0",
-	"BuildTime": "0",
-	"Cost": {
-	    "food": "0",
-	    "wood": "0",
-	    "stone": "0",
-	    "metal": "0",
-	    "population": "0",
-	},
-	"Attack": {
-	    "Melee": {"Hack": 0, "Pierce": 0, "Crush": 0},
-	    "Ranged": {"Hack": 0, "Pierce": 0, "Crush": 0},
-	},
-	"RepeatRate": {"Melee": "0", "Ranged": "0"},
-	"PrepRate": {"Melee": "0", "Ranged": "0"},
-	"Resistance": {"Hack": 0, "Pierce": 0, "Crush": 0},
-	"Ranged": False,
-	"Classes": [],
-	"AttackBonuses": {},
-	"Restricted": [],
-	"WalkSpeed": 0,
-	"Range": 0,
-	"Spread": 0,
-	"Civ": None,
+        "HP": "0",
+        "BuildTime": "0",
+        "Cost": {
+            "food": "0",
+            "wood": "0",
+            "stone": "0",
+            "metal": "0",
+            "population": "0",
+        },
+        "Attack": {
+            "Melee": {"Hack": 0, "Pierce": 0, "Crush": 0},
+            "Ranged": {"Hack": 0, "Pierce": 0, "Crush": 0},
+        },
+        "RepeatRate": {"Melee": "0", "Ranged": "0"},
+        "PrepRate": {"Melee": "0", "Ranged": "0"},
+        "Resistance": {"Hack": 0, "Pierce": 0, "Crush": 0},
+        "Ranged": False,
+        "Classes": [],
+        "AttackBonuses": {},
+        "Restricted": [],
+        "WalkSpeed": 0,
+        "Range": 0,
+        "Spread": 0,
+        "Civ": None,
     }
 
     if existingUnit != None:
-	unit = existingUnit
+        unit = existingUnit
 
     Template = fastParse(UnitName)
 
     # Recursively get data from our parent which we'll override.
     if Template.getroot().get("parent") != None:
-	# A25 uses unit class/category prefixed to the unit name separated by |
-	# We strip these categories for now
-	# This can be used later for classification
-	Name = Template.getroot().get("parent").split("|")[-1] + ".xml"
+        # A25 uses unit class/category prefixed to the unit name separated by |
+        # We strip these categories for now
+        # This can be used later for classification
+        Name = Template.getroot().get("parent").split("|")[-1] + ".xml"
 
-	unit = CalcUnit(Name, unit)
-	unit["Parent"] = Name
+        unit = CalcUnit(Name, unit)
+        unit["Parent"] = Name
 
     if Template.find("./Identity/Civ") != None:
-	unit["Civ"] = Template.find("./Identity/Civ").text
+        unit["Civ"] = Template.find("./Identity/Civ").text
 
     if Template.find("./Health/Max") != None:
-	unit["HP"] = NumericStatProcess(unit["HP"], Template.find("./Health/Max"))
+        unit["HP"] = NumericStatProcess(unit["HP"], Template.find("./Health/Max"))
 
     if Template.find("./Cost/BuildTime") != None:
-	unit["BuildTime"] = NumericStatProcess(
-	    unit["BuildTime"], Template.find("./Cost/BuildTime")
-	)
+        unit["BuildTime"] = NumericStatProcess(
+            unit["BuildTime"], Template.find("./Cost/BuildTime")
+        )
 
     if Template.find("./Cost/Resources") != None:
-	for type in list(Template.find("./Cost/Resources")):
-	    unit["Cost"][type.tag] = NumericStatProcess(unit["Cost"][type.tag], type)
+        for type in list(Template.find("./Cost/Resources")):
+            unit["Cost"][type.tag] = NumericStatProcess(unit["Cost"][type.tag], type)
 
     if Template.find("./Cost/Population") != None:
-	unit["Cost"]["population"] = NumericStatProcess(
-	    unit["Cost"]["population"], Template.find("./Cost/Population")
-	)
+        unit["Cost"]["population"] = NumericStatProcess(
+            unit["Cost"]["population"], Template.find("./Cost/Population")
+        )
 
     if Template.find("./Attack/Melee") != None:
-	if Template.find("./Attack/Melee/RepeatTime") != None:
-	    unit["RepeatRate"]["Melee"] = NumericStatProcess(
-		unit["RepeatRate"]["Melee"], Template.find("./Attack/Melee/RepeatTime")
-	    )
-	if Template.find("./Attack/Melee/PrepareTime") != None:
-	    unit["PrepRate"]["Melee"] = NumericStatProcess(
-		unit["PrepRate"]["Melee"], Template.find("./Attack/Melee/PrepareTime")
-	    )
-	for atttype in AttackTypes:
-	    if Template.find("./Attack/Melee/Damage/" + atttype) != None:
-		unit["Attack"]["Melee"][atttype] = NumericStatProcess(
-		    unit["Attack"]["Melee"][atttype],
-		    Template.find("./Attack/Melee/Damage/" + atttype),
-		)
-	if Template.find("./Attack/Melee/Bonuses") != None:
-	    for Bonus in Template.find("./Attack/Melee/Bonuses"):
-		Against = []
-		CivAg = []
-		if Bonus.find("Classes") != None and Bonus.find("Classes").text != None:
-		    Against = Bonus.find("Classes").text.split(" ")
-		if Bonus.find("Civ") != None and Bonus.find("Civ").text != None:
-		    CivAg = Bonus.find("Civ").text.split(" ")
-		Val = float(Bonus.find("Multiplier").text)
-		unit["AttackBonuses"][Bonus.tag] = {
-		    "Classes": Against,
-		    "Civs": CivAg,
-		    "Multiplier": Val,
-		}
-	if Template.find("./Attack/Melee/RestrictedClasses") != None:
-	    newClasses = Template.find("./Attack/Melee/RestrictedClasses").text.split(
-		" "
-	    )
-	    for elem in newClasses:
-		if elem.find("-") != -1:
-		    newClasses.pop(newClasses.index(elem))
-		    if elem in unit["Restricted"]:
-			unit["Restricted"].pop(newClasses.index(elem))
-	    unit["Restricted"] += newClasses
+        if Template.find("./Attack/Melee/RepeatTime") != None:
+            unit["RepeatRate"]["Melee"] = NumericStatProcess(
+                unit["RepeatRate"]["Melee"], Template.find("./Attack/Melee/RepeatTime")
+            )
+        if Template.find("./Attack/Melee/PrepareTime") != None:
+            unit["PrepRate"]["Melee"] = NumericStatProcess(
+                unit["PrepRate"]["Melee"], Template.find("./Attack/Melee/PrepareTime")
+            )
+        for atttype in AttackTypes:
+            if Template.find("./Attack/Melee/Damage/" + atttype) != None:
+                unit["Attack"]["Melee"][atttype] = NumericStatProcess(
+                    unit["Attack"]["Melee"][atttype],
+                    Template.find("./Attack/Melee/Damage/" + atttype),
+                )
+        if Template.find("./Attack/Melee/Bonuses") != None:
+            for Bonus in Template.find("./Attack/Melee/Bonuses"):
+                Against = []
+                CivAg = []
+                if Bonus.find("Classes") != None and Bonus.find("Classes").text != None:
+                    Against = Bonus.find("Classes").text.split(" ")
+                if Bonus.find("Civ") != None and Bonus.find("Civ").text != None:
+                    CivAg = Bonus.find("Civ").text.split(" ")
+                Val = float(Bonus.find("Multiplier").text)
+                unit["AttackBonuses"][Bonus.tag] = {
+                    "Classes": Against,
+                    "Civs": CivAg,
+                    "Multiplier": Val,
+                }
+        if Template.find("./Attack/Melee/RestrictedClasses") != None:
+            newClasses = Template.find("./Attack/Melee/RestrictedClasses").text.split(
+                " "
+            )
+            for elem in newClasses:
+                if elem.find("-") != -1:
+                    newClasses.pop(newClasses.index(elem))
+                    if elem in unit["Restricted"]:
+                        unit["Restricted"].pop(newClasses.index(elem))
+            unit["Restricted"] += newClasses
 
     if Template.find("./Attack/Ranged") != None:
-	unit["Ranged"] = True
-	if Template.find("./Attack/Ranged/MaxRange") != None:
-	    unit["Range"] = NumericStatProcess(
-		unit["Range"], Template.find("./Attack/Ranged/MaxRange")
-	    )
-	if Template.find("./Attack/Ranged/Spread") != None:
-	    unit["Spread"] = NumericStatProcess(
-		unit["Spread"], Template.find("./Attack/Ranged/Spread")
-	    )
-	if Template.find("./Attack/Ranged/RepeatTime") != None:
-	    unit["RepeatRate"]["Ranged"] = NumericStatProcess(
-		unit["RepeatRate"]["Ranged"],
-		Template.find("./Attack/Ranged/RepeatTime"),
-	    )
-	if Template.find("./Attack/Ranged/PrepareTime") != None:
-	    unit["PrepRate"]["Ranged"] = NumericStatProcess(
-		unit["PrepRate"]["Ranged"], Template.find("./Attack/Ranged/PrepareTime")
-	    )
-	for atttype in AttackTypes:
-	    if Template.find("./Attack/Ranged/Damage/" + atttype) != None:
-		unit["Attack"]["Ranged"][atttype] = NumericStatProcess(
-		    unit["Attack"]["Ranged"][atttype],
-		    Template.find("./Attack/Ranged/Damage/" + atttype),
-		)
-	if Template.find("./Attack/Ranged/Bonuses") != None:
-	    for Bonus in Template.find("./Attack/Ranged/Bonuses"):
-		Against = []
-		CivAg = []
-		if Bonus.find("Classes") != None and Bonus.find("Classes").text != None:
-		    Against = Bonus.find("Classes").text.split(" ")
-		if Bonus.find("Civ") != None and Bonus.find("Civ").text != None:
-		    CivAg = Bonus.find("Civ").text.split(" ")
-		Val = float(Bonus.find("Multiplier").text)
-		unit["AttackBonuses"][Bonus.tag] = {
-		    "Classes": Against,
-		    "Civs": CivAg,
-		    "Multiplier": Val,
-		}
-	if Template.find("./Attack/Melee/RestrictedClasses") != None:
-	    newClasses = Template.find("./Attack/Melee/RestrictedClasses").text.split(
-		" "
-	    )
-	    for elem in newClasses:
-		if elem.find("-") != -1:
-		    newClasses.pop(newClasses.index(elem))
-		    if elem in unit["Restricted"]:
-			unit["Restricted"].pop(newClasses.index(elem))
-	    unit["Restricted"] += newClasses
+        unit["Ranged"] = True
+        if Template.find("./Attack/Ranged/MaxRange") != None:
+            unit["Range"] = NumericStatProcess(
+                unit["Range"], Template.find("./Attack/Ranged/MaxRange")
+            )
+        if Template.find("./Attack/Ranged/Spread") != None:
+            unit["Spread"] = NumericStatProcess(
+                unit["Spread"], Template.find("./Attack/Ranged/Spread")
+            )
+        if Template.find("./Attack/Ranged/RepeatTime") != None:
+            unit["RepeatRate"]["Ranged"] = NumericStatProcess(
+                unit["RepeatRate"]["Ranged"],
+                Template.find("./Attack/Ranged/RepeatTime"),
+            )
+        if Template.find("./Attack/Ranged/PrepareTime") != None:
+            unit["PrepRate"]["Ranged"] = NumericStatProcess(
+                unit["PrepRate"]["Ranged"], Template.find("./Attack/Ranged/PrepareTime")
+            )
+        for atttype in AttackTypes:
+            if Template.find("./Attack/Ranged/Damage/" + atttype) != None:
+                unit["Attack"]["Ranged"][atttype] = NumericStatProcess(
+                    unit["Attack"]["Ranged"][atttype],
+                    Template.find("./Attack/Ranged/Damage/" + atttype),
+                )
+        if Template.find("./Attack/Ranged/Bonuses") != None:
+            for Bonus in Template.find("./Attack/Ranged/Bonuses"):
+                Against = []
+                CivAg = []
+                if Bonus.find("Classes") != None and Bonus.find("Classes").text != None:
+                    Against = Bonus.find("Classes").text.split(" ")
+                if Bonus.find("Civ") != None and Bonus.find("Civ").text != None:
+                    CivAg = Bonus.find("Civ").text.split(" ")
+                Val = float(Bonus.find("Multiplier").text)
+                unit["AttackBonuses"][Bonus.tag] = {
+                    "Classes": Against,
+                    "Civs": CivAg,
+                    "Multiplier": Val,
+                }
+        if Template.find("./Attack/Melee/RestrictedClasses") != None:
+            newClasses = Template.find("./Attack/Melee/RestrictedClasses").text.split(
+                " "
+            )
+            for elem in newClasses:
+                if elem.find("-") != -1:
+                    newClasses.pop(newClasses.index(elem))
+                    if elem in unit["Restricted"]:
+                        unit["Restricted"].pop(newClasses.index(elem))
+            unit["Restricted"] += newClasses
 
     if Template.find("Resistance") != None:
-	# Armor is renamed into Resistance and stored insdie a new node Entity
-	# list(ET.parse('template_unit_cavalry.xml').getroot().find('Resistance/Entity/Damage'))
-	# list(ET.parse('template_unit_cavalry.xml').find('Resistance/Entity/Damage'))
+        # Armor is renamed into Resistance and stored insdie a new node Entity
+        # list(ET.parse('template_unit_cavalry.xml').getroot().find('Resistance/Entity/Damage'))
+        # list(ET.parse('template_unit_cavalry.xml').find('Resistance/Entity/Damage'))
 
-	for atttype in AttackTypes:
-	    extracted_resistance = Template.find(
-		"./Resistance/Entity/Damage/" + atttype
-	    )
-	    if extracted_resistance != None:
-		unit["Resistance"][atttype] = NumericStatProcess(
-		    unit["Resistance"][atttype], extracted_resistance
-		)
+        for atttype in AttackTypes:
+            extracted_resistance = Template.find(
+                "./Resistance/Entity/Damage/" + atttype
+            )
+            if extracted_resistance != None:
+                unit["Resistance"][atttype] = NumericStatProcess(
+                    unit["Resistance"][atttype], extracted_resistance
+                )
 
     if Template.find("./UnitMotion") != None:
-	if Template.find("./UnitMotion/WalkSpeed") != None:
-	    unit["WalkSpeed"] = NumericStatProcess(
-		unit["WalkSpeed"], Template.find("./UnitMotion/WalkSpeed")
-	    )
+        if Template.find("./UnitMotion/WalkSpeed") != None:
+            unit["WalkSpeed"] = NumericStatProcess(
+                unit["WalkSpeed"], Template.find("./UnitMotion/WalkSpeed")
+            )
 
     if Template.find("./Identity/VisibleClasses") != None:
-	newClasses = Template.find("./Identity/VisibleClasses").text.split(" ")
-	for elem in newClasses:
-	    if elem.find("-") != -1:
-		newClasses.pop(newClasses.index(elem))
-		if elem in unit["Classes"]:
-		    unit["Classes"].pop(newClasses.index(elem))
-	unit["Classes"] += newClasses
+        newClasses = Template.find("./Identity/VisibleClasses").text.split(" ")
+        for elem in newClasses:
+            if elem.find("-") != -1:
+                newClasses.pop(newClasses.index(elem))
+                if elem in unit["Classes"]:
+                    unit["Classes"].pop(newClasses.index(elem))
+        unit["Classes"] += newClasses
 
     if Template.find("./Identity/Classes") != None:
-	newClasses = Template.find("./Identity/Classes").text.split(" ")
-	for elem in newClasses:
-	    if elem.find("-") != -1:
-		newClasses.pop(newClasses.index(elem))
-		if elem in unit["Classes"]:
-		    unit["Classes"].pop(newClasses.index(elem))
-	unit["Classes"] += newClasses
+        newClasses = Template.find("./Identity/Classes").text.split(" ")
+        for elem in newClasses:
+            if elem.find("-") != -1:
+                newClasses.pop(newClasses.index(elem))
+                if elem in unit["Classes"]:
+                    unit["Classes"].pop(newClasses.index(elem))
+        unit["Classes"] += newClasses
 
     return unit
 
@@ -370,53 +370,53 @@ def WriteUnit(Name, UnitDict):
     ret += "<td>" + str("%.1f" % float(UnitDict["WalkSpeed"])) + "</td>"
 
     for atype in AttackTypes:
-	PercentValue = 1.0 - (0.9 ** float(UnitDict["Resistance"][atype]))
-	ret += (
-	    "<td>"
-	    + str("%.0f" % float(UnitDict["Resistance"][atype]))
-	    + " / "
-	    + str("%.0f" % (PercentValue * 100.0))
-	    + "%</td>"
-	)
+        PercentValue = 1.0 - (0.9 ** float(UnitDict["Resistance"][atype]))
+        ret += (
+            "<td>"
+            + str("%.0f" % float(UnitDict["Resistance"][atype]))
+            + " / "
+            + str("%.0f" % (PercentValue * 100.0))
+            + "%</td>"
+        )
 
     attType = "Ranged" if UnitDict["Ranged"] == True else "Melee"
     if UnitDict["RepeatRate"][attType] != "0":
-	for atype in AttackTypes:
-	    repeatTime = float(UnitDict["RepeatRate"][attType]) / 1000.0
-	    ret += (
-		"<td>"
-		+ str("%.1f" % (float(UnitDict["Attack"][attType][atype]) / repeatTime))
-		+ "</td>"
-	    )
+        for atype in AttackTypes:
+            repeatTime = float(UnitDict["RepeatRate"][attType]) / 1000.0
+            ret += (
+                "<td>"
+                + str("%.1f" % (float(UnitDict["Attack"][attType][atype]) / repeatTime))
+                + "</td>"
+            )
 
-	ret += (
-	    "<td>"
-	    + str("%.1f" % (float(UnitDict["RepeatRate"][attType]) / 1000.0))
-	    + "</td>"
-	)
+        ret += (
+            "<td>"
+            + str("%.1f" % (float(UnitDict["RepeatRate"][attType]) / 1000.0))
+            + "</td>"
+        )
     else:
-	for atype in AttackTypes:
-	    ret += "<td> - </td>"
-	ret += "<td> - </td>"
+        for atype in AttackTypes:
+            ret += "<td> - </td>"
+        ret += "<td> - </td>"
 
     if UnitDict["Ranged"] == True and UnitDict["Range"] > 0:
-	ret += "<td>" + str("%.1f" % float(UnitDict["Range"])) + "</td>"
-	spread = float(UnitDict["Spread"])
-	ret += "<td>" + str("%.1f" % spread) + "</td>"
+        ret += "<td>" + str("%.1f" % float(UnitDict["Range"])) + "</td>"
+        spread = float(UnitDict["Spread"])
+        ret += "<td>" + str("%.1f" % spread) + "</td>"
     else:
-	ret += "<td> - </td><td> - </td>"
+        ret += "<td> - </td><td> - </td>"
 
     for rtype in Resources:
-	ret += "<td>" + str("%.0f" % float(UnitDict["Cost"][rtype])) + "</td>"
+        ret += "<td>" + str("%.0f" % float(UnitDict["Cost"][rtype])) + "</td>"
 
     ret += "<td>" + str("%.0f" % float(UnitDict["Cost"]["population"])) + "</td>"
 
     ret += '<td style="text-align:left;">'
     for Bonus in UnitDict["AttackBonuses"]:
-	ret += "["
-	for classe in UnitDict["AttackBonuses"][Bonus]["Classes"]:
-	    ret += classe + " "
-	ret += ": " + str(UnitDict["AttackBonuses"][Bonus]["Multiplier"]) + "]  "
+        ret += "["
+        for classe in UnitDict["AttackBonuses"][Bonus]["Classes"]:
+            ret += classe + " "
+        ret += ": " + str(UnitDict["AttackBonuses"][Bonus]["Multiplier"]) + "]  "
     ret += "</td>"
 
     ret += "</tr>\n"
@@ -427,15 +427,15 @@ def WriteUnit(Name, UnitDict):
 def SortFn(A):
     sortVal = 0
     for classe in SortTypes:
-	sortVal += 1
-	if classe in A[1]["Classes"]:
-	    break
+        sortVal += 1
+        if classe in A[1]["Classes"]:
+            break
     if ComparativeSortByChamp == True and A[0].find("champion") == -1:
-	sortVal -= 20
+        sortVal -= 20
     if ComparativeSortByCav == True and A[0].find("cavalry") == -1:
-	sortVal -= 10
+        sortVal -= 10
     if A[1]["Civ"] != None and A[1]["Civ"] in Civs:
-	sortVal += 100 * Civs.index(A[1]["Civ"])
+        sortVal += 100 * Civs.index(A[1]["Civ"])
     return sortVal
 
 
@@ -446,34 +446,34 @@ def WriteColouredDiff(file, diff, isChanged):
     """
 
     def cleverParse(diff):
-	if float(diff) - int(diff) < 0.001:
-	    return str(int(diff))
-	else:
-	    return str("%.1f" % float(diff))
+        if float(diff) - int(diff) < 0.001:
+            return str(int(diff))
+        else:
+            return str("%.1f" % float(diff))
 
     isAdvantageous = diff.imag > 0
     diff = diff.real
     if diff != 0:
-	isChanged = True
+        isChanged = True
     else:
-	# do not change its value if one parameter is not changed (yet)
-	# some other parameter might be different
-	pass
+        # do not change its value if one parameter is not changed (yet)
+        # some other parameter might be different
+        pass
 
     if diff == 0:
-	rgb_str = "200,200,200"
+        rgb_str = "200,200,200"
     elif isAdvantageous and diff > 0:
-	rgb_str = "180,0,0"
+        rgb_str = "180,0,0"
     elif (not isAdvantageous) and diff < 0:
-	rgb_str = "180,0,0"
+        rgb_str = "180,0,0"
     else:
-	rgb_str = "0,150,0"
+        rgb_str = "0,150,0"
 
     file.write(
-	"""<td><span style="color:rgb({});">{}</span></td>
-	""".format(
-	    rgb_str, cleverParse(diff)
-	)
+        """<td><span style="color:rgb({});">{}</span></td>
+        """.format(
+            rgb_str, cleverParse(diff)
+        )
     )
     return isChanged
 
@@ -481,78 +481,78 @@ def WriteColouredDiff(file, diff, isChanged):
 def computeUnitEfficiencyDiff(TemplatesByParent, Civs):
     efficiency_table = {}
     for parent in TemplatesByParent:
-	TemplatesByParent[parent].sort(key=lambda x: Civs.index(x[1]["Civ"]))
-	for tp in TemplatesByParent[parent]:
-	    # HP
-	    diff = -1j + (int(tp[1]["HP"]) - int(templates[parent]["HP"]))
-	    efficiency_table[(parent, tp[0], "HP")] = diff
-	    efficiency_table[(parent, tp[0], "HP")] = diff
+        TemplatesByParent[parent].sort(key=lambda x: Civs.index(x[1]["Civ"]))
+        for tp in TemplatesByParent[parent]:
+            # HP
+            diff = -1j + (int(tp[1]["HP"]) - int(templates[parent]["HP"]))
+            efficiency_table[(parent, tp[0], "HP")] = diff
+            efficiency_table[(parent, tp[0], "HP")] = diff
 
-	    # Build Time
-	    diff = +1j + (int(tp[1]["BuildTime"]) - int(templates[parent]["BuildTime"]))
-	    efficiency_table[(parent, tp[0], "BuildTime")] = diff
+            # Build Time
+            diff = +1j + (int(tp[1]["BuildTime"]) - int(templates[parent]["BuildTime"]))
+            efficiency_table[(parent, tp[0], "BuildTime")] = diff
 
-	    # walk speed
-	    diff = -1j + (
-		float(tp[1]["WalkSpeed"]) - float(templates[parent]["WalkSpeed"])
-	    )
-	    efficiency_table[(parent, tp[0], "WalkSpeed")] = diff
+            # walk speed
+            diff = -1j + (
+                float(tp[1]["WalkSpeed"]) - float(templates[parent]["WalkSpeed"])
+            )
+            efficiency_table[(parent, tp[0], "WalkSpeed")] = diff
 
-	    # Armor
-	    for atype in AttackTypes:
-		diff = -1j + (
-		    float(tp[1]["Resistance"][atype])
-		    - float(templates[parent]["Resistance"][atype])
-		)
-		efficiency_table[(parent, tp[0], "Resistance/" + atype)] = diff
+            # Armor
+            for atype in AttackTypes:
+                diff = -1j + (
+                    float(tp[1]["Resistance"][atype])
+                    - float(templates[parent]["Resistance"][atype])
+                )
+                efficiency_table[(parent, tp[0], "Resistance/" + atype)] = diff
 
-	    # Attack types (DPS) and rate.
-	    attType = "Ranged" if tp[1]["Ranged"] == True else "Melee"
-	    if tp[1]["RepeatRate"][attType] != "0":
-		for atype in AttackTypes:
-		    myDPS = float(tp[1]["Attack"][attType][atype]) / (
-			float(tp[1]["RepeatRate"][attType]) / 1000.0
-		    )
-		    parentDPS = float(templates[parent]["Attack"][attType][atype]) / (
-			float(templates[parent]["RepeatRate"][attType]) / 1000.0
-		    )
-		    diff = -1j + (myDPS - parentDPS)
-		    efficiency_table[
-			(parent, tp[0], "Attack/" + attType + "/" + atype)
-		    ] = diff
-		diff = -1j + (
-		    float(tp[1]["RepeatRate"][attType]) / 1000.0
-		    - float(templates[parent]["RepeatRate"][attType]) / 1000.0
-		)
-		efficiency_table[
-		    (parent, tp[0], "Attack/" + attType + "/" + atype + "/RepeatRate")
-		] = diff
-		# range and spread
-		if tp[1]["Ranged"] == True:
-		    diff = -1j + (
-			float(tp[1]["Range"]) - float(templates[parent]["Range"])
-		    )
-		    efficiency_table[
-			(parent, tp[0], "Attack/" + attType + "/Ranged/Range")
-		    ] = diff
+            # Attack types (DPS) and rate.
+            attType = "Ranged" if tp[1]["Ranged"] == True else "Melee"
+            if tp[1]["RepeatRate"][attType] != "0":
+                for atype in AttackTypes:
+                    myDPS = float(tp[1]["Attack"][attType][atype]) / (
+                        float(tp[1]["RepeatRate"][attType]) / 1000.0
+                    )
+                    parentDPS = float(templates[parent]["Attack"][attType][atype]) / (
+                        float(templates[parent]["RepeatRate"][attType]) / 1000.0
+                    )
+                    diff = -1j + (myDPS - parentDPS)
+                    efficiency_table[
+                        (parent, tp[0], "Attack/" + attType + "/" + atype)
+                    ] = diff
+                diff = -1j + (
+                    float(tp[1]["RepeatRate"][attType]) / 1000.0
+                    - float(templates[parent]["RepeatRate"][attType]) / 1000.0
+                )
+                efficiency_table[
+                    (parent, tp[0], "Attack/" + attType + "/" + atype + "/RepeatRate")
+                ] = diff
+                # range and spread
+                if tp[1]["Ranged"] == True:
+                    diff = -1j + (
+                        float(tp[1]["Range"]) - float(templates[parent]["Range"])
+                    )
+                    efficiency_table[
+                        (parent, tp[0], "Attack/" + attType + "/Ranged/Range")
+                    ] = diff
 
-		    diff = float(tp[1]["Spread"]) - float(templates[parent]["Spread"])
-		    efficiency_table[
-			(parent, tp[0], "Attack/" + attType + "/Ranged/Spread")
-		    ] = diff
+                    diff = float(tp[1]["Spread"]) - float(templates[parent]["Spread"])
+                    efficiency_table[
+                        (parent, tp[0], "Attack/" + attType + "/Ranged/Spread")
+                    ] = diff
 
-	    for rtype in Resources:
-		diff = +1j + (
-		    float(tp[1]["Cost"][rtype])
-		    - float(templates[parent]["Cost"][rtype])
-		)
-		efficiency_table[(parent, tp[0], "Resources/" + rtype)] = diff
+            for rtype in Resources:
+                diff = +1j + (
+                    float(tp[1]["Cost"][rtype])
+                    - float(templates[parent]["Cost"][rtype])
+                )
+                efficiency_table[(parent, tp[0], "Resources/" + rtype)] = diff
 
-	    diff = +1j + (
-		float(tp[1]["Cost"]["population"])
-		- float(templates[parent]["Cost"]["population"])
-	    )
-	    efficiency_table[(parent, tp[0], "Population")] = diff
+            diff = +1j + (
+                float(tp[1]["Cost"]["population"])
+                - float(templates[parent]["Cost"]["population"])
+            )
+            efficiency_table[(parent, tp[0], "Population")] = diff
 
     return efficiency_table
 
@@ -563,15 +563,15 @@ def computeTemplates(LoadTemplatesIfParent):
     os.chdir(basePath)
     templates = {}
     for template in list(glob.glob("template_*.xml")):
-	if os.path.isfile(template):
-	    found = False
-	    for possParent in LoadTemplatesIfParent:
-		if hasParentTemplate(template, possParent):
-		    found = True
-		    break
-	    if found == True:
-		templates[template] = CalcUnit(template)
-		# f.write(WriteUnit(template, templates[template]))
+        if os.path.isfile(template):
+            found = False
+            for possParent in LoadTemplatesIfParent:
+                if hasParentTemplate(template, possParent):
+                    found = True
+                    break
+            if found == True:
+                templates[template] = CalcUnit(template)
+                # f.write(WriteUnit(template, templates[template]))
     os.chdir(pwd)
     return templates
 
@@ -584,36 +584,36 @@ def computeCivTemplates(template: dict, Civs: list):
     CivTemplates = {}
 
     for Civ in Civs:
-	CivTemplates[Civ] = {}
-	# Load all templates that start with that civ indicator
-	for template in list(glob.glob("units/" + Civ + "/*.xml")):
-	    if os.path.isfile(template):
+        CivTemplates[Civ] = {}
+        # Load all templates that start with that civ indicator
+        for template in list(glob.glob("units/" + Civ + "/*.xml")):
+            if os.path.isfile(template):
 
-		# filter based on FilterOut
-		breakIt = False
-		for filter in FilterOut:
-		    if template.find(filter) != -1:
-			breakIt = True
-		if breakIt:
-		    continue
+                # filter based on FilterOut
+                breakIt = False
+                for filter in FilterOut:
+                    if template.find(filter) != -1:
+                        breakIt = True
+                if breakIt:
+                    continue
 
-		# filter based on loaded generic templates
-		breakIt = True
-		for possParent in LoadTemplatesIfParent:
-		    if hasParentTemplate(template, possParent):
-			breakIt = False
-			break
-		if breakIt:
-		    continue
+                # filter based on loaded generic templates
+                breakIt = True
+                for possParent in LoadTemplatesIfParent:
+                    if hasParentTemplate(template, possParent):
+                        breakIt = False
+                        break
+                if breakIt:
+                    continue
 
-		unit = CalcUnit(template)
+                unit = CalcUnit(template)
 
-		# Remove variants for now
-		if unit["Parent"].find("template_") == -1:
-		    continue
+                # Remove variants for now
+                if unit["Parent"].find("template_") == -1:
+                    continue
 
-		# load template
-		CivTemplates[Civ][template] = unit
+                # load template
+                CivTemplates[Civ][template] = unit
 
     os.chdir(pwd)
     return CivTemplates
@@ -624,18 +624,18 @@ def computeTemplatesByParent(templates: dict, Civs: list, CivTemplates: dict):
     # Civs:list -> CivTemplates:dict -> templates:dict -> TemplatesByParent
     TemplatesByParent = {}
     for Civ in Civs:
-	for CivUnitTemplate in CivTemplates[Civ]:
-	    parent = CivTemplates[Civ][CivUnitTemplate]["Parent"]
+        for CivUnitTemplate in CivTemplates[Civ]:
+            parent = CivTemplates[Civ][CivUnitTemplate]["Parent"]
 
-	    # We have the following constant equality
-	    # templates[*]["Civ"] === gaia
-	    # if parent in templates and templates[parent]["Civ"] == None:
-	    if parent in templates:
-		if parent not in TemplatesByParent:
-		    TemplatesByParent[parent] = []
-		TemplatesByParent[parent].append(
-		    (CivUnitTemplate, CivTemplates[Civ][CivUnitTemplate])
-		)
+            # We have the following constant equality
+            # templates[*]["Civ"] === gaia
+            # if parent in templates and templates[parent]["Civ"] == None:
+            if parent in templates:
+                if parent not in TemplatesByParent:
+                    TemplatesByParent[parent] = []
+                TemplatesByParent[parent].append(
+                    (CivUnitTemplate, CivTemplates[Civ][CivUnitTemplate])
+                )
 
     # debug after CivTemplates are non-empty
     return TemplatesByParent
@@ -655,21 +655,21 @@ efficiencyTable = computeUnitEfficiencyDiff(
 def writeHTML():
     """Create the HTML file"""
     f = open(
-	os.path.realpath(__file__).replace("unitTables.py", "")
-	+ "unit_summary_table.html",
-	"w",
+        os.path.realpath(__file__).replace("unitTables.py", "")
+        + "unit_summary_table.html",
+        "w",
     )
 
     f.write(
-	"""
+        """
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 <html>
 <head>
-	<title>Unit Tables</title>
-	<link rel="stylesheet" href="style.css">
+        <title>Unit Tables</title>
+        <link rel="stylesheet" href="style.css">
 </head>
 <body>
-	"""
+        """
     )
     htbout(f, "h1", "Unit Summary Table")
     f.write("\n")
@@ -677,29 +677,29 @@ def writeHTML():
     # Write generic templates
     htbout(f, "h2", "Units")
     f.write(
-	"""
+        """
 <table id="genericTemplates">
   <thead>
     <tr>
       <th> </th> <th>HP </th> <th>BuildTime </th> <th>Speed(walk) </th>
-	  <th colspan="3">Resistance </th>
-	  <th colspan="6">Attack (DPS) </th>
-	  <th colspan="5">Costs </th>
-	  <th>Efficient Against </th>
-	</tr>
+          <th colspan="3">Resistance </th>
+          <th colspan="6">Attack (DPS) </th>
+          <th colspan="5">Costs </th>
+          <th>Efficient Against </th>
+        </tr>
     <tr class="Label" style="border-bottom:1px black solid;">
       <th> </th> <th> </th> <th> </th> <th> </th>
-	  <th>H </th> <th>P </th> <th>C </th>
-	  <th>H </th> <th>P </th> <th>C </th>
+          <th>H </th> <th>P </th> <th>C </th>
+          <th>H </th> <th>P </th> <th>C </th>
       <th>Rate </th> <th>Range </th> <th>Spread (/100m) </th>
-	  <th>F </th> <th>W </th> <th>S </th> <th>M </th> <th>P </th>
-	  <th> </th>
-	</tr>
+          <th>F </th> <th>W </th> <th>S </th> <th>M </th> <th>P </th>
+          <th> </th>
+        </tr>
 </thead>
-	"""
+        """
     )
     for template in templates:
-	f.write(WriteUnit(template, templates[template]))
+        f.write(WriteUnit(template, templates[template]))
     f.write("</table>")
 
     # Write unit specialization
@@ -707,7 +707,7 @@ def writeHTML():
     # TODO: pre-compute the diffs then render, filtering out the non-interesting ones
     #
     f.write(
-	"""
+        """
 <h2>Units Specializations
 </h2>
 <p class="desc">This table compares each template to its parent, showing the differences between the two.
@@ -717,146 +717,146 @@ def writeHTML():
   <thead>
     <tr>
       <th> </th> <th> </th> <th>HP </th> <th>BuildTime </th> <th>Speed (/100m) </th>
-	  <th colspan="3">Resistance </th>
-	  <th colspan="6">Attack </th>
-	  <th colspan="5">Costs </th>
-	  <th>Civ </th>
-	</tr>
+          <th colspan="3">Resistance </th>
+          <th colspan="6">Attack </th>
+          <th colspan="5">Costs </th>
+          <th>Civ </th>
+        </tr>
     <tr class="Label" style="border-bottom:1px black solid;">
       <th> </th> <th> </th> <th> </th> <th> </th> <th> </th>
-	  <th>H </th> <th>P </th> <th>C </th>
-	  <th>H </th> <th>P </th> <th>C </th>
+          <th>H </th> <th>P </th> <th>C </th>
+          <th>H </th> <th>P </th> <th>C </th>
       <th>Rate </th> <th>Range </th> <th>Spread </th>
-	  <th>F </th> <th>W </th> <th>S </th> <th>M </th> <th>P </th>
-	  <th> </th>
-	</tr>
+          <th>F </th> <th>W </th> <th>S </th> <th>M </th> <th>P </th>
+          <th> </th>
+        </tr>
   </thead>
-	"""
+        """
     )
     for parent in TemplatesByParent:
-	TemplatesByParent[parent].sort(key=lambda x: Civs.index(x[1]["Civ"]))
-	for tp in TemplatesByParent[parent]:
-	    isChanged = False
-	    ff = open(
-		os.path.realpath(__file__).replace("unitTables.py", "") + ".cache", "w"
-	    )
+        TemplatesByParent[parent].sort(key=lambda x: Civs.index(x[1]["Civ"]))
+        for tp in TemplatesByParent[parent]:
+            isChanged = False
+            ff = open(
+                os.path.realpath(__file__).replace("unitTables.py", "") + ".cache", "w"
+            )
 
-	    ff.write("<tr>")
-	    ff.write(
-		"<th style='font-size:10px'>"
-		+ parent.replace(".xml", "").replace("template_", "")
-		+ "</th>"
-	    )
-	    ff.write(
-		'<td class="Sub">'
-		+ tp[0].replace(".xml", "").replace("units/", "")
-		+ "</td>"
-	    )
+            ff.write("<tr>")
+            ff.write(
+                "<th style='font-size:10px'>"
+                + parent.replace(".xml", "").replace("template_", "")
+                + "</th>"
+            )
+            ff.write(
+                '<td class="Sub">'
+                + tp[0].replace(".xml", "").replace("units/", "")
+                + "</td>"
+            )
 
-	    # HP
-	    diff = -1j + (int(tp[1]["HP"]) - int(templates[parent]["HP"]))
-	    isChanged = WriteColouredDiff(ff, diff, isChanged)
+            # HP
+            diff = -1j + (int(tp[1]["HP"]) - int(templates[parent]["HP"]))
+            isChanged = WriteColouredDiff(ff, diff, isChanged)
 
-	    # Build Time
-	    diff = +1j + (int(tp[1]["BuildTime"]) - int(templates[parent]["BuildTime"]))
-	    isChanged = WriteColouredDiff(ff, diff, isChanged)
+            # Build Time
+            diff = +1j + (int(tp[1]["BuildTime"]) - int(templates[parent]["BuildTime"]))
+            isChanged = WriteColouredDiff(ff, diff, isChanged)
 
-	    # walk speed
-	    diff = -1j + (
-		float(tp[1]["WalkSpeed"]) - float(templates[parent]["WalkSpeed"])
-	    )
-	    isChanged = WriteColouredDiff(ff, diff, isChanged)
+            # walk speed
+            diff = -1j + (
+                float(tp[1]["WalkSpeed"]) - float(templates[parent]["WalkSpeed"])
+            )
+            isChanged = WriteColouredDiff(ff, diff, isChanged)
 
-	    # Armor
-	    for atype in AttackTypes:
-		diff = -1j + (
-		    float(tp[1]["Resistance"][atype])
-		    - float(templates[parent]["Resistance"][atype])
-		)
-		isChanged = WriteColouredDiff(ff, diff, isChanged)
+            # Armor
+            for atype in AttackTypes:
+                diff = -1j + (
+                    float(tp[1]["Resistance"][atype])
+                    - float(templates[parent]["Resistance"][atype])
+                )
+                isChanged = WriteColouredDiff(ff, diff, isChanged)
 
-	    # Attack types (DPS) and rate.
-	    attType = "Ranged" if tp[1]["Ranged"] == True else "Melee"
-	    if tp[1]["RepeatRate"][attType] != "0":
-		for atype in AttackTypes:
-		    myDPS = float(tp[1]["Attack"][attType][atype]) / (
-			float(tp[1]["RepeatRate"][attType]) / 1000.0
-		    )
-		    parentDPS = float(templates[parent]["Attack"][attType][atype]) / (
-			float(templates[parent]["RepeatRate"][attType]) / 1000.0
-		    )
-		    isChanged = WriteColouredDiff(
-			ff, -1j + (myDPS - parentDPS), isChanged
-		    )
-		isChanged = WriteColouredDiff(
-		    ff,
-		    -1j
-		    + (
-			float(tp[1]["RepeatRate"][attType]) / 1000.0
-			- float(templates[parent]["RepeatRate"][attType]) / 1000.0
-		    ),
-		    isChanged,
-		)
-		# range and spread
-		if tp[1]["Ranged"] == True:
-		    isChanged = WriteColouredDiff(
-			ff,
-			-1j
-			+ (float(tp[1]["Range"]) - float(templates[parent]["Range"])),
-			isChanged,
-		    )
-		    mySpread = float(tp[1]["Spread"])
-		    parentSpread = float(templates[parent]["Spread"])
-		    isChanged = WriteColouredDiff(
-			ff, +1j + (mySpread - parentSpread), isChanged
-		    )
-		else:
-		    ff.write("<td></td><td></td>")
-	    else:
-		ff.write("<td></td><td></td><td></td><td></td><td></td><td></td>")
+            # Attack types (DPS) and rate.
+            attType = "Ranged" if tp[1]["Ranged"] == True else "Melee"
+            if tp[1]["RepeatRate"][attType] != "0":
+                for atype in AttackTypes:
+                    myDPS = float(tp[1]["Attack"][attType][atype]) / (
+                        float(tp[1]["RepeatRate"][attType]) / 1000.0
+                    )
+                    parentDPS = float(templates[parent]["Attack"][attType][atype]) / (
+                        float(templates[parent]["RepeatRate"][attType]) / 1000.0
+                    )
+                    isChanged = WriteColouredDiff(
+                        ff, -1j + (myDPS - parentDPS), isChanged
+                    )
+                isChanged = WriteColouredDiff(
+                    ff,
+                    -1j
+                    + (
+                        float(tp[1]["RepeatRate"][attType]) / 1000.0
+                        - float(templates[parent]["RepeatRate"][attType]) / 1000.0
+                    ),
+                    isChanged,
+                )
+                # range and spread
+                if tp[1]["Ranged"] == True:
+                    isChanged = WriteColouredDiff(
+                        ff,
+                        -1j
+                        + (float(tp[1]["Range"]) - float(templates[parent]["Range"])),
+                        isChanged,
+                    )
+                    mySpread = float(tp[1]["Spread"])
+                    parentSpread = float(templates[parent]["Spread"])
+                    isChanged = WriteColouredDiff(
+                        ff, +1j + (mySpread - parentSpread), isChanged
+                    )
+                else:
+                    ff.write("<td></td><td></td>")
+            else:
+                ff.write("<td></td><td></td><td></td><td></td><td></td><td></td>")
 
-	    for rtype in Resources:
-		isChanged = WriteColouredDiff(
-		    ff,
-		    +1j
-		    + (
-			float(tp[1]["Cost"][rtype])
-			- float(templates[parent]["Cost"][rtype])
-		    ),
-		    isChanged,
-		)
+            for rtype in Resources:
+                isChanged = WriteColouredDiff(
+                    ff,
+                    +1j
+                    + (
+                        float(tp[1]["Cost"][rtype])
+                        - float(templates[parent]["Cost"][rtype])
+                    ),
+                    isChanged,
+                )
 
-	    isChanged = WriteColouredDiff(
-		ff,
-		+1j
-		+ (
-		    float(tp[1]["Cost"]["population"])
-		    - float(templates[parent]["Cost"]["population"])
-		),
-		isChanged,
-	    )
+            isChanged = WriteColouredDiff(
+                ff,
+                +1j
+                + (
+                    float(tp[1]["Cost"]["population"])
+                    - float(templates[parent]["Cost"]["population"])
+                ),
+                isChanged,
+            )
 
-	    ff.write("<td>" + tp[1]["Civ"] + "</td>")
-	    ff.write("</tr>\n")
+            ff.write("<td>" + tp[1]["Civ"] + "</td>")
+            ff.write("</tr>\n")
 
-	    ff.close()  # to actually write into the file
-	    with open(
-		os.path.realpath(__file__).replace("unitTables.py", "") + ".cache", "r"
-	    ) as ff:
-		unitStr = ff.read()
+            ff.close()  # to actually write into the file
+            with open(
+                os.path.realpath(__file__).replace("unitTables.py", "") + ".cache", "r"
+            ) as ff:
+                unitStr = ff.read()
 
-	    if showChangedOnly:
-		if isChanged:
-		    f.write(unitStr)
-	    else:
-		# print the full table if showChangedOnly is false
-		f.write(unitStr)
+            if showChangedOnly:
+                if isChanged:
+                    f.write(unitStr)
+            else:
+                # print the full table if showChangedOnly is false
+                f.write(unitStr)
 
     f.write("<table/>")
 
     # Table of unit having or not having some units.
     f.write(
-	"""
+        """
 <h2>Roster Variety
 </h2>
 <p class="desc">This table show which civilizations have units who derive from each loaded generic template.
@@ -870,37 +870,37 @@ def writeHTML():
 """
     )
     for civ in Civs:
-	f.write('<td class="vertical-text">' + civ + "</td>\n")
+        f.write('<td class="vertical-text">' + civ + "</td>\n")
     f.write("</tr>\n")
 
     sortedDict = sorted(templates.items(), key=SortFn)
 
     for tp in sortedDict:
-	if tp[0] not in TemplatesByParent:
-	    continue
-	f.write("<tr><td>" + tp[0] + "</td>\n")
-	for civ in Civs:
-	    found = 0
-	    for temp in TemplatesByParent[tp[0]]:
-		if temp[1]["Civ"] == civ:
-		    found += 1
-	    if found == 1:
-		f.write('<td style="background-color:rgb(0,90,0);"></td>')
-	    elif found == 2:
-		f.write('<td style="background-color:rgb(0,150,0);"></td>')
-	    elif found >= 3:
-		f.write('<td style="background-color:rgb(0,255,0);"></td>')
-	    else:
-		f.write('<td style="background-color:rgb(200,200,200);"></td>')
-	f.write("</tr>\n")
+        if tp[0] not in TemplatesByParent:
+            continue
+        f.write("<tr><td>" + tp[0] + "</td>\n")
+        for civ in Civs:
+            found = 0
+            for temp in TemplatesByParent[tp[0]]:
+                if temp[1]["Civ"] == civ:
+                    found += 1
+            if found == 1:
+                f.write('<td style="background-color:rgb(0,90,0);"></td>')
+            elif found == 2:
+                f.write('<td style="background-color:rgb(0,150,0);"></td>')
+            elif found >= 3:
+                f.write('<td style="background-color:rgb(0,255,0);"></td>')
+            else:
+                f.write('<td style="background-color:rgb(200,200,200);"></td>')
+        f.write("</tr>\n")
     f.write(
-	'<tr style="margin-top:2px;border-top:2px #aaa solid;"><th style="text-align:right; padding-right:10px;">Total:</th>\n'
+        '<tr style="margin-top:2px;border-top:2px #aaa solid;"><th style="text-align:right; padding-right:10px;">Total:</th>\n'
     )
     for civ in Civs:
-	count = 0
-	for units in CivTemplates[civ]:
-	    count += 1
-	f.write('<td style="text-align:center;">' + str(count) + "</td>\n")
+        count = 0
+        for units in CivTemplates[civ]:
+            count += 1
+        f.write('<td style="text-align:center;">' + str(count) + "</td>\n")
 
     f.write("</tr>\n")
 
@@ -908,14 +908,14 @@ def writeHTML():
 
     # Add a simple script to allow filtering on sorting directly in the HTML page.
     if AddSortingOverlay:
-	f.write(
-	    """
+        f.write(
+            """
 <script src="tablefilter/tablefilter.js"></script>
 <script data-config>
 var cast = function (val) {
 console.log(val);                       if (+val != val)
-		return -999999999999;
-	return +val;
+                return -999999999999;
+        return +val;
 }
 
 
@@ -933,18 +933,18 @@ var filtersConfig = {
     filters_row_index: 2,
     headers_row_index: 1,
     extensions: [
-	{
-	    name: "sort",
-	    types: ["string",
-		    ...Array(6).fill("us"),
-		    ...Array(6).fill("mytype"),
-		    ...Array(5).fill("us"),
-		    "string",
-		   ],
-	    on_sort_loaded: function (o, sort) {
-		sort.addSortType("mytype", cast);
-	    },
-	},
+        {
+            name: "sort",
+            types: ["string",
+                    ...Array(6).fill("us"),
+                    ...Array(6).fill("mytype"),
+                    ...Array(5).fill("us"),
+                    "string",
+                   ],
+            on_sort_loaded: function (o, sort) {
+                sort.addSortType("mytype", cast);
+            },
+        },
     ],
     col_widths: [...Array(18).fill(null), "120px"],
 };
@@ -967,18 +967,18 @@ var secondFiltersConfig = {
     filters_row_index: 2,
     headers_row_index: 1,
     extensions: [
-	{
-	    name: "sort",
-	    types: ["string", "string",
-		    ...Array(6).fill("us"),
-		    ...Array(6).fill("typetwo"),
-		    ...Array(5).fill("us"),
-		    "string",
-		   ],
-	    on_sort_loaded: function (o, sort) {
-		sort.addSortType("typetwo", cast);
-	    },
-	},
+        {
+            name: "sort",
+            types: ["string", "string",
+                    ...Array(6).fill("us"),
+                    ...Array(6).fill("typetwo"),
+                    ...Array(5).fill("us"),
+                    "string",
+                   ],
+            on_sort_loaded: function (o, sort) {
+                sort.addSortType("typetwo", cast);
+            },
+        },
     ],
     col_widths: Array(20).fill(null),
 };
@@ -988,8 +988,8 @@ var tf2 = new TableFilter('TemplateParentComp', secondFiltersConfig,2);
 tf2.init();
 
 </script>
-	"""
-	)
+        """
+        )
 
     f.write("</body>\n</html>")
 
