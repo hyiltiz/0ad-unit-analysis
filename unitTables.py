@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-
+# -*- mode: python-mode; python-indent-offset: 4; -*-
+#
 # Copyright (C) 2015-2022 Wildfire Games.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
+#
 
 
 import xml.etree.ElementTree as ET
@@ -40,7 +42,8 @@ LoadTemplatesIfParent = [
 ]
 
 # Those describe Civs to analyze.
-# The script will load all entities that derive (to the nth degree) from one of the above templates.
+# The script will load all entities that derive (to the nth degree) from one of
+# the above templates.
 Civs = [
     "athen",
     "brit",
@@ -79,10 +82,12 @@ SortTypes = [
     "Elephant",
 ]  # Classes
 
-# Disable if you want the more compact basic data. Enable to allow filtering and sorting in-place.
+# Disable if you want the more compact basic data. Enable to allow filtering and
+# sorting in-place.
 AddSortingOverlay = True
 
-# This is the path to the /templates/ folder to consider. Change this for mod support.
+# This is the path to the /templates/ folder to consider. Change this for mod
+# support.
 basePath = (
     os.path.realpath(__file__).replace("unitTables.py", "")
     + "../../../binaries/data/mods/public/simulation/templates/"
@@ -137,7 +142,9 @@ def hasParentTemplate(UnitName, parentName):
         longName = Template.getroot().get("parent") + ".xml"
 
         # A25 uses unit class/category prefixed to the unit name
-        # separated by | We strip these categories for now. The | syntax
+        # separated by |, known as mixins.
+        #
+        # We strip these categories for now. The | syntax
         # gives a unit its "category" (like merc_cav, merc_inf, hoplite,
         # builder, shrine, civ/athen). This can be used later for
         # classification
@@ -170,7 +177,7 @@ def NumericStatProcess(unitValue, templateValue):
 
 
 def CalcUnit(UnitName, existingUnit=None):
-    """This function parses the entity values recursively through fastParse()."""
+    """Parse the entity values recursively through fastParse()."""
     unit = {
         "HP": "0",
         "BuildTime": "0",
@@ -217,7 +224,8 @@ def CalcUnit(UnitName, existingUnit=None):
         unit["Civ"] = Template.find("./Identity/Civ").text
 
     if Template.find("./Health/Max") != None:
-        unit["HP"] = NumericStatProcess(unit["HP"], Template.find("./Health/Max"))
+        unit["HP"] = NumericStatProcess(
+            unit["HP"], Template.find("./Health/Max"))
 
     if Template.find("./Cost/BuildTime") != None:
         unit["BuildTime"] = NumericStatProcess(
@@ -226,7 +234,8 @@ def CalcUnit(UnitName, existingUnit=None):
 
     if Template.find("./Cost/Resources") != None:
         for type in list(Template.find("./Cost/Resources")):
-            unit["Cost"][type.tag] = NumericStatProcess(unit["Cost"][type.tag], type)
+            unit["Cost"][type.tag] = NumericStatProcess(
+                unit["Cost"][type.tag], type)
 
     if Template.find("./Cost/Population") != None:
         unit["Cost"]["population"] = NumericStatProcess(
@@ -236,11 +245,13 @@ def CalcUnit(UnitName, existingUnit=None):
     if Template.find("./Attack/Melee") != None:
         if Template.find("./Attack/Melee/RepeatTime") != None:
             unit["RepeatRate"]["Melee"] = NumericStatProcess(
-                unit["RepeatRate"]["Melee"], Template.find("./Attack/Melee/RepeatTime")
+                unit["RepeatRate"]["Melee"],
+                Template.find("./Attack/Melee/RepeatTime")
             )
         if Template.find("./Attack/Melee/PrepareTime") != None:
             unit["PrepRate"]["Melee"] = NumericStatProcess(
-                unit["PrepRate"]["Melee"], Template.find("./Attack/Melee/PrepareTime")
+                unit["PrepRate"]["Melee"],
+                Template.find("./Attack/Melee/PrepareTime")
             )
         for atttype in AttackTypes:
             if Template.find("./Attack/Melee/Damage/" + atttype) != None:
@@ -252,7 +263,8 @@ def CalcUnit(UnitName, existingUnit=None):
             for Bonus in Template.find("./Attack/Melee/Bonuses"):
                 Against = []
                 CivAg = []
-                if Bonus.find("Classes") != None and Bonus.find("Classes").text != None:
+                if Bonus.find("Classes") != None \
+                   and Bonus.find("Classes").text != None:
                     Against = Bonus.find("Classes").text.split(" ")
                 if Bonus.find("Civ") != None and Bonus.find("Civ").text != None:
                     CivAg = Bonus.find("Civ").text.split(" ")
@@ -263,9 +275,8 @@ def CalcUnit(UnitName, existingUnit=None):
                     "Multiplier": Val,
                 }
         if Template.find("./Attack/Melee/RestrictedClasses") != None:
-            newClasses = Template.find("./Attack/Melee/RestrictedClasses").text.split(
-                " "
-            )
+            newClasses = Template.find("./Attack/Melee/RestrictedClasses")\
+                                 .text.split(" ")
             for elem in newClasses:
                 if elem.find("-") != -1:
                     newClasses.pop(newClasses.index(elem))
@@ -290,7 +301,8 @@ def CalcUnit(UnitName, existingUnit=None):
             )
         if Template.find("./Attack/Ranged/PrepareTime") != None:
             unit["PrepRate"]["Ranged"] = NumericStatProcess(
-                unit["PrepRate"]["Ranged"], Template.find("./Attack/Ranged/PrepareTime")
+                unit["PrepRate"]["Ranged"],
+                Template.find("./Attack/Ranged/PrepareTime")
             )
         for atttype in AttackTypes:
             if Template.find("./Attack/Ranged/Damage/" + atttype) != None:
@@ -302,7 +314,8 @@ def CalcUnit(UnitName, existingUnit=None):
             for Bonus in Template.find("./Attack/Ranged/Bonuses"):
                 Against = []
                 CivAg = []
-                if Bonus.find("Classes") != None and Bonus.find("Classes").text != None:
+                if Bonus.find("Classes") != None \
+                   and Bonus.find("Classes").text != None:
                     Against = Bonus.find("Classes").text.split(" ")
                 if Bonus.find("Civ") != None and Bonus.find("Civ").text != None:
                     CivAg = Bonus.find("Civ").text.split(" ")
@@ -313,9 +326,8 @@ def CalcUnit(UnitName, existingUnit=None):
                     "Multiplier": Val,
                 }
         if Template.find("./Attack/Melee/RestrictedClasses") != None:
-            newClasses = Template.find("./Attack/Melee/RestrictedClasses").text.split(
-                " "
-            )
+            newClasses = Template.find("./Attack/Melee/RestrictedClasses")\
+                                 .text.split(" ")
             for elem in newClasses:
                 if elem.find("-") != -1:
                     newClasses.pop(newClasses.index(elem))
@@ -325,7 +337,6 @@ def CalcUnit(UnitName, existingUnit=None):
 
     if Template.find("Resistance") != None:
         # Armor is renamed into Resistance and stored insdie a new node Entity
-        # list(ET.parse('template_unit_cavalry.xml').getroot().find('Resistance/Entity/Damage'))
         # list(ET.parse('template_unit_cavalry.xml').find('Resistance/Entity/Damage'))
 
         for atttype in AttackTypes:
@@ -391,8 +402,9 @@ def WriteUnit(Name, UnitDict):
             repeatTime = float(UnitDict["RepeatRate"][attType]) / 1000.0
             ret += (
                 "<td>"
-                + str("%.1f" % (float(UnitDict["Attack"][attType][atype]) / repeatTime))
-                + "</td>"
+                + str("%.1f" % (
+                    float(UnitDict["Attack"][attType][atype]) / repeatTime
+                )) + "</td>"
             )
 
         ret += (
@@ -413,16 +425,18 @@ def WriteUnit(Name, UnitDict):
         ret += "<td> - </td><td> - </td>"
 
     for rtype in Resources:
-        ret += "<td>" + str("%.0f" % float(UnitDict["Cost"][rtype])) + "</td>"
+        ret += "<td>" + str("%.0f" %
+                            float(UnitDict["Cost"][rtype])) + "</td>"
 
-    ret += "<td>" + str("%.0f" % float(UnitDict["Cost"]["population"])) + "</td>"
+    ret += "<td>" + str("%.0f" %
+                        float(UnitDict["Cost"]["population"])) + "</td>"
 
     ret += '<td style="text-align:left;">'
     for Bonus in UnitDict["AttackBonuses"]:
         ret += "["
         for classe in UnitDict["AttackBonuses"][Bonus]["Classes"]:
             ret += classe + " "
-        ret += ": " + str(UnitDict["AttackBonuses"][Bonus]["Multiplier"]) + "]  "
+        ret += ": %s]  " % UnitDict["AttackBonuses"][Bonus]["Multiplier"]
     ret += "</td>"
 
     ret += "</tr>\n"
@@ -495,12 +509,14 @@ def computeUnitEfficiencyDiff(TemplatesByParent, Civs):
             efficiency_table[(parent, tp[0], "HP")] = diff
 
             # Build Time
-            diff = +1j + (int(tp[1]["BuildTime"]) - int(templates[parent]["BuildTime"]))
+            diff = +1j + (int(tp[1]["BuildTime"]) -
+                          int(templates[parent]["BuildTime"]))
             efficiency_table[(parent, tp[0], "BuildTime")] = diff
 
             # walk speed
             diff = -1j + (
-                float(tp[1]["WalkSpeed"]) - float(templates[parent]["WalkSpeed"])
+                float(tp[1]["WalkSpeed"]) -
+                float(templates[parent]["WalkSpeed"])
             )
             efficiency_table[(parent, tp[0], "WalkSpeed")] = diff
 
@@ -519,7 +535,8 @@ def computeUnitEfficiencyDiff(TemplatesByParent, Civs):
                     myDPS = float(tp[1]["Attack"][attType][atype]) / (
                         float(tp[1]["RepeatRate"][attType]) / 1000.0
                     )
-                    parentDPS = float(templates[parent]["Attack"][attType][atype]) / (
+                    parentDPS = float(
+                        templates[parent]["Attack"][attType][atype]) / (
                         float(templates[parent]["RepeatRate"][attType]) / 1000.0
                     )
                     diff = -1j + (myDPS - parentDPS)
@@ -531,18 +548,21 @@ def computeUnitEfficiencyDiff(TemplatesByParent, Civs):
                     - float(templates[parent]["RepeatRate"][attType]) / 1000.0
                 )
                 efficiency_table[
-                    (parent, tp[0], "Attack/" + attType + "/" + atype + "/RepeatRate")
+                    (parent, tp[0], "Attack/" + attType + "/" + atype +
+                     "/RepeatRate")
                 ] = diff
                 # range and spread
                 if tp[1]["Ranged"] == True:
                     diff = -1j + (
-                        float(tp[1]["Range"]) - float(templates[parent]["Range"])
+                        float(tp[1]["Range"]) -
+                        float(templates[parent]["Range"])
                     )
                     efficiency_table[
                         (parent, tp[0], "Attack/" + attType + "/Ranged/Range")
                     ] = diff
 
-                    diff = float(tp[1]["Spread"]) - float(templates[parent]["Spread"])
+                    diff = (float(tp[1]["Spread"]) -
+                            float(templates[parent]["Spread"]))
                     efficiency_table[
                         (parent, tp[0], "Attack/" + attType + "/Ranged/Spread")
                     ] = diff
@@ -710,19 +730,26 @@ def writeHTML():
 
     # Write unit specialization
     # Sort them by civ and write them in a table.
-    # TODO: pre-compute the diffs then render, filtering out the non-interesting ones
+    #
+    # TODO: pre-compute the diffs then render, filtering out the non-interesting
+    # ones
     #
     f.write(
         """
 <h2>Units Specializations
 </h2>
-<p class="desc">This table compares each template to its parent, showing the differences between the two.
-  <br/>Note that like any table, you can copy/paste this in Excel (or Numbers or ...) and sort it.
+
+<p class="desc">This table compares each template to its parent, showing the
+differences between the two.
+  <br/>Note that like any table, you can copy/paste this in Excel (or Numbers or
+  ...) and sort it.
 </p>
+
 <table id="TemplateParentComp">
   <thead>
     <tr>
-      <th> </th> <th> </th> <th>HP </th> <th>BuildTime </th> <th>Speed (/100m) </th>
+      <th> </th> <th> </th> <th>HP </th> <th>BuildTime </th>
+          <th>Speed (/100m) </th>
           <th colspan="3">Resistance </th>
           <th colspan="6">Attack </th>
           <th colspan="5">Costs </th>
@@ -744,7 +771,8 @@ def writeHTML():
         for tp in TemplatesByParent[parent]:
             isChanged = False
             ff = open(
-                os.path.realpath(__file__).replace("unitTables.py", "") + ".cache", "w"
+                os.path.realpath(__file__).replace("unitTables.py", "") +
+                ".cache", "w"
             )
 
             ff.write("<tr>")
@@ -764,12 +792,14 @@ def writeHTML():
             isChanged = WriteColouredDiff(ff, diff, isChanged)
 
             # Build Time
-            diff = +1j + (int(tp[1]["BuildTime"]) - int(templates[parent]["BuildTime"]))
+            diff = +1j + (int(tp[1]["BuildTime"]) -
+                          int(templates[parent]["BuildTime"]))
             isChanged = WriteColouredDiff(ff, diff, isChanged)
 
             # walk speed
             diff = -1j + (
-                float(tp[1]["WalkSpeed"]) - float(templates[parent]["WalkSpeed"])
+                float(tp[1]["WalkSpeed"]) -
+                float(templates[parent]["WalkSpeed"])
             )
             isChanged = WriteColouredDiff(ff, diff, isChanged)
 
@@ -788,7 +818,8 @@ def writeHTML():
                     myDPS = float(tp[1]["Attack"][attType][atype]) / (
                         float(tp[1]["RepeatRate"][attType]) / 1000.0
                     )
-                    parentDPS = float(templates[parent]["Attack"][attType][atype]) / (
+                    parentDPS = float(
+                        templates[parent]["Attack"][attType][atype]) / (
                         float(templates[parent]["RepeatRate"][attType]) / 1000.0
                     )
                     isChanged = WriteColouredDiff(
@@ -808,7 +839,8 @@ def writeHTML():
                     isChanged = WriteColouredDiff(
                         ff,
                         -1j
-                        + (float(tp[1]["Range"]) - float(templates[parent]["Range"])),
+                        + (float(tp[1]["Range"]) -
+                           float(templates[parent]["Range"])),
                         isChanged,
                     )
                     mySpread = float(tp[1]["Spread"])
@@ -847,7 +879,8 @@ def writeHTML():
 
             ff.close()  # to actually write into the file
             with open(
-                os.path.realpath(__file__).replace("unitTables.py", "") + ".cache", "r"
+                os.path.realpath(__file__).replace("unitTables.py", "") +
+                    ".cache", "r"
             ) as ff:
                 unitStr = ff.read()
 
@@ -865,10 +898,14 @@ def writeHTML():
         """
 <h2>Roster Variety
 </h2>
-<p class="desc">This table show which civilizations have units who derive from each loaded generic template.
+
+<p class="desc">This table show which civilizations have units who derive from
+each loaded generic template.
   <br/>Grey means the civilization has no unit derived from a generic template;
-  <br/>dark green means 1 derived unit, mid-tone green means 2, bright green means 3 or more.
-  <br/>The total is the total number of loaded units for this civ, which may be more than the total of units inheriting from loaded templates.
+  <br/>dark green means 1 derived unit, mid-tone green means 2, bright green
+  means 3 or more.
+  <br/>The total is the total number of loaded units for this civ, which may be
+  more than the total of units inheriting from loaded templates.
 </p>
 <table class="CivRosterVariety">
   <tr>
@@ -900,7 +937,8 @@ def writeHTML():
                 f.write('<td style="background-color:rgb(200,200,200);"></td>')
         f.write("</tr>\n")
     f.write(
-        '<tr style="margin-top:2px;border-top:2px #aaa solid;"><th style="text-align:right; padding-right:10px;">Total:</th>\n'
+        '<tr style="margin-top:2px;border-top:2px #aaa solid;">\
+        <th style="text-align:right; padding-right:10px;">Total:</th>\n'
     )
     for civ in Civs:
         count = 0
@@ -912,7 +950,8 @@ def writeHTML():
 
     f.write("<table/>")
 
-    # Add a simple script to allow filtering on sorting directly in the HTML page.
+    # Add a simple script to allow filtering on sorting directly in the HTML
+    # page.
     if AddSortingOverlay:
         f.write(
             """
