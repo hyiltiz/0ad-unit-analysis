@@ -58,7 +58,7 @@ Civs = [
     "rome",
     "sele",
     "spart",
-    "gaia",
+    # "gaia",
 ]
 
 # Remote Civ templates with those strings in their name.
@@ -150,11 +150,23 @@ def hasParentTemplate(UnitName, parentName):
         # classification
 
         Name = longName.split("|")[-1]
+
+        mixins = {x.replace('civ/', '') for x in longName.split("|")[0:-1]}
+        civ = set(Civs).intersection(mixins)
+        if len(civ) > 0:
+            # mixin category contains a civ name
+            # we honor mixin civ hierarchy
+            # This assumes a unit only belongs to a single civ parent
+            unit_civ = list(civ)[0] + '.xml'
+            # unit_civ is not used in this function for now
+
         # print(f'Unit root {parent_str}is {Name}, cleaned from {longName}')
         if Name == parentName:
             # print(f'It matches tested parent.')
             return True
+
         Template = ET.parse(Name)
+             
         # parent_str += 'parent '
 
     # print(f'Unit {UnitName} has no parent {parentName}.')
@@ -211,17 +223,33 @@ def CalcUnit(UnitName, existingUnit=None):
     Template = fastParse(UnitName)
 
     # Recursively get data from our parent which we'll override.
+    unit_civ = None
     if Template.getroot().get("parent") != None:
-        # A25 uses unit class/category prefixed to the unit name separated by |
+        # A25 uses unit class/category prefixed to the unit name separated by |,
+        # known as mixins.
         # We strip these categories for now
         # This can be used later for classification
-        Name = Template.getroot().get("parent").split("|")[-1] + ".xml"
+        longName = Template.getroot().get("parent")
+        Name = longName.split("|")[-1] + ".xml"
+
+        mixins = {x.replace('civ/', '') for x in longName.split("|")[0:-1]}
+        civ = set(Civs).intersection(mixins)
+        if len(civ) > 0:
+            # mixin category contains a civ name
+            # we honor mixin civ hierarchy
+            # This assumes a unit only belongs to a single civ parent
+            unit_civ = list(civ)[0]
+
 
         unit = CalcUnit(Name, unit)
         unit["Parent"] = Name
 
-    if Template.find("./Identity/Civ") != None:
+    if unit_civ: 
+        unit["Civ"] = unit_civ
+    elif Template.find("./Identity/Civ") != None:
         unit["Civ"] = Template.find("./Identity/Civ").text
+
+
 
     if Template.find("./Health/Max") != None:
         unit["HP"] = NumericStatProcess(
@@ -502,6 +530,7 @@ def computeUnitEfficiencyDiff(TemplatesByParent, Civs):
     efficiency_table = {}
     for parent in TemplatesByParent:
         TemplatesByParent[parent].sort(key=lambda x: Civs.index(x[1]["Civ"]))
+
         for tp in TemplatesByParent[parent]:
             # HP
             diff = -1j + (int(tp[1]["HP"]) - int(templates[parent]["HP"]))
@@ -612,7 +641,9 @@ def computeCivTemplates(template: dict, Civs: list):
     for Civ in Civs:
         CivTemplates[Civ] = {}
         # Load all templates that start with that civ indicator
-        for template in list(glob.glob("units/" + Civ + "/*.xml")):
+        # TODO: consider adding mixin/civs here too
+        civ_list = list(glob.glob("units/" + Civ + "/*.xml"))
+        for template in civ_list:
             if os.path.isfile(template):
 
                 # filter based on FilterOut
@@ -642,6 +673,8 @@ def computeCivTemplates(template: dict, Civs: list):
                 CivTemplates[Civ][template] = unit
 
     os.chdir(pwd)
+    # Civ unit parenthood works as intended, i.e. a unit in a Civ indeed
+    # has a 'Civ' field recording its loyalty to that Civ
     return CivTemplates
 
 
